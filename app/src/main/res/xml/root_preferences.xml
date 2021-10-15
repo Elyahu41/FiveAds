@@ -1,0 +1,36 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="Account">
+
+        <EditTextPreference
+            app:key="displayName"
+            app:title="Your Display Name"
+            app:summary="User Display Name Here"
+            app:dialogTitle="Change your display name?"/>
+
+        <Preference
+            app:key="emailAddress"
+            app:title="Your Email"
+            app:summary="User Email Here" />
+
+        <Preference
+            app:key="password"
+            app:title="Reset Password?"
+            app:summary="Click here to reset your password" />
+
+        <Preference
+            app:key="signOut"
+            app:title="Sign Out?"
+            app:summary="Click here to sign out" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Contact Us">
+
+        <Preference
+            app:key="contactUS"
+            app:title="Having a problem? Contact Us!" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

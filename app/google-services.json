@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "708817051626",
+    "project_id": "five-ads",
+    "storage_bucket": "five-ads.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:708817051626:android:3dd6d2205da4af26979c93",
+        "android_client_info": {
+          "package_name": "com.ej.fiveads"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "708817051626-qcvo5ecs77k0ij1j7jprq7kdst88iehc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjSQuf_ow6uyJJ8drixko1D25QotnMk8c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "708817051626-qcvo5ecs77k0ij1j7jprq7kdst88iehc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_earn"
+        android:icon="@drawable/ic_baseline_play_arrow_24"
+        android:title="@string/earn" />
+
+    <item
+        android:id="@+id/navigation_spend"
+        android:icon="@drawable/money"
+        android:title="@string/spend" />
+
+</menu>
