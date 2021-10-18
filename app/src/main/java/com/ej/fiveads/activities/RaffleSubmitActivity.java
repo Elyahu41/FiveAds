@@ -31,12 +31,13 @@ public class RaffleSubmitActivity extends AppCompatActivity {
     private FirebaseUser mFirebaseUser;
     private DatabaseReference mLeaderboardsDatabase;
     private DatabaseReference mTicketsDatabase;
-    private int mTicketsAlreadySubmitted;
-    private TextView mTickets;
     private int mNumberOfUsableTickets;
+    private int mTicketsAlreadySubmitted;
+    private TextView mTicketsTV;
     private String mCurrentLeaderboardDate;
     private Bundle mBundle;
     private final String TAG = "RaffleActivity";
+    private TextView mTicketsAlreadySubmittedTV;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +48,8 @@ public class RaffleSubmitActivity extends AppCompatActivity {
 
         TextView title = findViewById(R.id.titleTextView);
         ImageView imageView = findViewById(R.id.submitImage);
-        mTickets = findViewById(R.id.numberOfTicketsTextView);
+        mTicketsTV = findViewById(R.id.numberOfTicketsTextView);
+        mTicketsAlreadySubmittedTV = findViewById(R.id.numberOfTicketsSubmittedTextView);
         Button minus1 = findViewById(R.id.buttonMinus1);
         EditText editText = findViewById(R.id.editText);
         Button plus1 = findViewById(R.id.buttonPlus1);
@@ -71,7 +73,10 @@ public class RaffleSubmitActivity extends AppCompatActivity {
             mLeaderboardsDatabase = database.getReference("Leaderboards");
             mCurrentLeaderboardDate = "Leaderboards" +
                     calendar.get(Calendar.YEAR) +
-                    calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH);//Final String should look like Leaderboards2021OCT
+                    calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH);//Final String should look like Leaderboards2021Oct
+            if (mCurrentLeaderboardDate.equals("Leaderboards2021Oct")) {
+                mCurrentLeaderboardDate = "Leaderboards2021Nov";//TODO remove after this month and test
+            }
             initializeDatabaseListeners();//to see the value of total and usable tickets
         }
 
@@ -86,14 +91,14 @@ public class RaffleSubmitActivity extends AppCompatActivity {
         });
 
         editText.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) {
-                mUserSelectedTicketsToSubmit = mNumberOfUsableTickets;
-                editText.setText(String.valueOf(mUserSelectedTicketsToSubmit));
-            }
+            mUserSelectedTicketsToSubmit = mNumberOfUsableTickets;
+            editText.setText(String.valueOf(mUserSelectedTicketsToSubmit));
         });
 
         editText.setOnEditorActionListener((v, actionId, event) -> {
-            mUserSelectedTicketsToSubmit = Integer.parseInt(v.getText().toString());
+            if (!editText.getText().toString().isEmpty()) {
+                mUserSelectedTicketsToSubmit = Integer.parseInt(editText.getText().toString());
+            }
             return false;
         });
 
@@ -106,6 +111,9 @@ public class RaffleSubmitActivity extends AppCompatActivity {
         });
 
         submitButton.setOnClickListener(v -> {
+            if (!editText.getText().toString().isEmpty()) {
+                mUserSelectedTicketsToSubmit = Integer.parseInt(editText.getText().toString());
+            }
             if (mUserSelectedTicketsToSubmit == 0) {
                 Toast.makeText(this, R.string.you_cant_submit_nothing, Toast.LENGTH_SHORT).show();
             } else if (mUserSelectedTicketsToSubmit > mNumberOfUsableTickets) {
@@ -131,7 +139,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                 );
                 String updatedUsableTickets = String.format(Locale.ENGLISH, "%,d", mNumberOfUsableTickets - mUserSelectedTicketsToSubmit);
                 String usableTickets = "Usable tickets: " + updatedUsableTickets;
-                mTickets.setText(usableTickets);
+                mTicketsTV.setText(usableTickets);
                 new AlertDialog.Builder(this)
                         .setTitle("Tickets Submitted!")
                         .setMessage("You have submitted " + mUserSelectedTicketsToSubmit + " ticket(s)!")
@@ -155,6 +163,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                             .child(mFirebaseUser.getUid())
                             .child("submittedTickets")
                             .getValue(Integer.class);//Objects.requireNonNull() did not work
+                    mTicketsAlreadySubmittedTV.setText(String.format(Locale.getDefault(), "Tickets already submitted: %d", mTicketsAlreadySubmitted));
                 }
             }
 
@@ -176,7 +185,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                             .getValue(Integer.class);//Objects.requireNonNull() did not work
                     String numberOfUsableTickets = String.format(Locale.ENGLISH, "%,d", mNumberOfUsableTickets);
                     String usableTickets = "Usable tickets: " + numberOfUsableTickets;
-                    mTickets.setText(usableTickets);
+                    mTicketsTV.setText(usableTickets);
                 }
                 Log.d(TAG, "Usable Tickets Value is: " + mNumberOfUsableTickets);
             }

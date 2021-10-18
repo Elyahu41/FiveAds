@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -17,6 +16,7 @@ import com.ej.fiveads.activities.LeaderboardActivity;
 import com.ej.fiveads.classes.RaffleAdapter;
 import com.ej.fiveads.classes.RaffleData;
 import com.ej.fiveads.databinding.FragmentSpendBinding;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,13 +30,12 @@ public class SpendFragment extends Fragment {
 
         binding = FragmentSpendBinding.inflate(inflater, container, false);
 
-        Button leaderboard = binding.leaderboardButton;
-        leaderboard.setOnClickListener(v -> {
-            startActivity(new Intent(getContext(), LeaderboardActivity.class));
-        });
         RecyclerView mRecyclerView = binding.recyclerview;
         mRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 1));
         mRecyclerView.setAdapter(new RaffleAdapter(requireContext(), getListOfRaffles()));
+
+        FloatingActionButton leaderboard = binding.leaderboardButton;
+        leaderboard.setOnClickListener(v -> startActivity(new Intent(getContext(), LeaderboardActivity.class)));
 
         return binding.getRoot();
     }

@@ -10,10 +10,10 @@
         android:id="@+id/leaderboardTop"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/purple"
         android:gravity="center"
         android:text="@string/leaderboard"
-        android:textSize="26sp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="18sp"
         android:textStyle="bold"
         android:textAllCaps="true"
         app:layout_constraintStart_toStartOf="parent"
@@ -23,7 +23,7 @@
         android:id="@+id/leaderboardTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/purple_500"
+        android:background="#0E65CE"
         android:gravity="center"
         android:text="@string/_20_raffle"
         android:textAllCaps="true"
@@ -35,26 +35,56 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/leaderboardRV"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/leaderboardCurrentUser"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintTop_toBottomOf="@+id/leaderboardTitle"
         app:layout_constraintVertical_bias="0.0"
         tools:layout_editor_absoluteX="0dp" />
 
-    <TextView
-        android:id="@+id/leaderboardCurrentUser"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:background="@color/purple"
-        android:gravity="start"
-        android:text="You:"
-        android:textAllCaps="false"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/leaderboardCurrentUser"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@color/purple"
+            android:gravity="start"
+            android:paddingStart="32dp"
+            android:paddingEnd="16dp"
+            android:text="@string/you"
+            android:textAllCaps="false"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/leaderboardCurrentUserTickets"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/leaderboardCurrentUserTickets"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:background="@drawable/border"
+            android:gravity="end"
+            android:paddingStart="16dp"
+            android:paddingEnd="32dp"
+            android:text="23333"
+            android:textAllCaps="false"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

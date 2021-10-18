@@ -30,6 +30,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.firebase.auth.FirebaseAuth;
@@ -57,6 +58,7 @@ public class EarnFragment extends Fragment {
     private static int mNumberOfUsableTickets = 0;
     private int mEnergyAmountAsInt;
     private int mNumberOfTotalTickets = 0;
+    private FragmentEarnBinding binding;
     private FirebaseUser mFirebaseUser;
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
@@ -66,13 +68,14 @@ public class EarnFragment extends Fragment {
     private TextView mTicketAmount;
     private TextView mEnergyAmount;
     private Button mWatchAdButton;
-    private FragmentEarnBinding binding;
     private TextView mCountDown;
     private static RewardedAd mRewardedAd;
     private SharedPreferences mSharedPreferences;
     private final String TAG = "MainActivity";
     private final String mTopLevelDatabase = "Users";
     private String mCurrentKeyForTheDay;
+    private boolean isAddingTickets = false;
+    private CountDownTimer mCountDownTimer;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         initializeAds();
@@ -109,10 +112,10 @@ public class EarnFragment extends Fragment {
         mWatchAdButton.setOnClickListener(v -> {//TODO configure autoplay all 5 ads //performClick method
             if (mRewardedAd != null) {
                 mRewardedAd.show(requireActivity(), rewardItem -> {// Handle the reward.
+                    recreateTimer(rewardItem);
                     Log.d(TAG, "The user earned the reward.");
-                    int rewardAmount = rewardItem.getAmount();//should be only 1
-                    String rewardType = rewardItem.getType();//should be Ticket
-                    //if (rewardType.equals("Ticket")) {//TODO test
+                    int rewardAmount = rewardItem.getAmount();//should be only 5
+                    //if (rewardItem.getType().equals("Tickets")) {//TODO test
                         mTicketsDatabase.child(mFirebaseUser.getUid()).child("usableTickets").setValue(mNumberOfUsableTickets + rewardAmount);
                         mTicketsDatabase.child(mFirebaseUser.getUid()).child("totalTicketsEarned").setValue(mNumberOfTotalTickets + rewardAmount);
                         if (mEnergyAmountAsInt > 0) {
@@ -134,6 +137,30 @@ public class EarnFragment extends Fragment {
         });
 
         return binding.getRoot();
+    }
+
+    private void recreateTimer(RewardItem rewardItem) {
+        mCountDownTimer = new CountDownTimer(2500, 250) {
+
+            int currentTickets = mNumberOfUsableTickets;
+            final int FINAL_TICKETS = currentTickets + rewardItem.getAmount();
+            final int resetTextColor = mTicketAmount.getTextColors().getDefaultColor();
+
+            @Override
+            public void onTick(long millisUntilFinished) {
+                isAddingTickets = true;
+                mTicketAmount.setTextColor(getResources().getColor(R.color.green, requireActivity().getTheme()));
+                currentTickets += 1;
+                mTicketAmount.setText(String.format(Locale.getDefault(), "%,d", currentTickets));
+            }
+
+            @Override
+            public void onFinish() {
+                mTicketAmount.setTextColor(resetTextColor);
+                mTicketAmount.setText(String.format(Locale.getDefault(), "%,d", FINAL_TICKETS));
+                isAddingTickets = false;
+            }
+        };
     }
 
     private void initializeAds() {//TODO find out how to implement mediation
@@ -167,7 +194,10 @@ public class EarnFragment extends Fragment {
                                 mRewardedAd = null;// Set the ad reference to null so you don't show the ad a second time.
                                 mWatchAdButton.setEnabled(false);
                                 mWatchAdButton.setText(R.string.ad_loading);
-                                initializeAds();
+                                if (mEnergyAmountAsInt != 0) {
+                                    initializeAds();
+                                }
+                                mCountDownTimer.start();
                             }
                         });
                         if (mEnergyAmountAsInt != 0) {
@@ -188,7 +218,9 @@ public class EarnFragment extends Fragment {
             mWatchAdButton.setText(R.string.come_back_tomorrow);
             startCountdownTimer();
         }
-        mTicketAmount.setText(String.valueOf(mNumberOfUsableTickets));
+        if (!isAddingTickets) {
+            mTicketAmount.setText(String.valueOf(mNumberOfUsableTickets));
+        }
     }
 
     private void updateCurrentEnergy() {
@@ -269,7 +301,9 @@ public class EarnFragment extends Fragment {
                     mNumberOfTotalTickets = dataSnapshot.child(mFirebaseUser.getUid()).child("totalTicketsEarned").getValue(Integer.class);
                 }
                 String numberOfUsableTickets = String.format(Locale.getDefault(),"%,d", mNumberOfUsableTickets);
-                mTicketAmount.setText(numberOfUsableTickets);
+                if (!isAddingTickets) {
+                    mTicketAmount.setText(numberOfUsableTickets);
+                }
                 Log.d(TAG, "Usable Tickets Value is: " + mNumberOfUsableTickets);
                 Log.d(TAG, "Total Tickets Earned Value is: " + mNumberOfTotalTickets);
             }

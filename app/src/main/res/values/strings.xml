@@ -33,5 +33,6 @@
     <string name="title_activity_test">Test</string>
     <string name="action_settings">Settings</string>
     <string name="ad_loading">Ad loading…</string>
-    <string name="leaderboard">LEADERBOARD</string>
+    <string name="leaderboard">LEADERBOARD\n(Tickets Submitted)</string>
+    <string name="you">You:</string>
 </resources>

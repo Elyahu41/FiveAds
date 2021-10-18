@@ -2,14 +2,17 @@ package com.ej.fiveads.classes;
 
 public class UserData implements Comparable<UserData> {
 
-    private final int rank;
+    private int rank;
     private final String name;
     private final int ticketsSubmitted;
 
-    public UserData(int rank, String name, int ticketsSubmitted) {
-        this.rank = rank;
+    public UserData(String name, int ticketsSubmitted) {
         this.name = name;
         this.ticketsSubmitted = ticketsSubmitted;
+    }
+
+    public void setRank(int rank) {
+        this.rank = rank;
     }
 
     public int getRank() {
@@ -26,9 +29,9 @@ public class UserData implements Comparable<UserData> {
 
     @Override
     public int compareTo(UserData otherUser) {
-        if (this.getRank() > otherUser.getRank()) {
+        if (this.getTicketsSubmitted() > otherUser.getTicketsSubmitted()) {
             return 1;
-        } else if (this.getRank() == ((UserData) otherUser).getRank()) {
+        } else if (this.getTicketsSubmitted() == ((UserData) otherUser).getTicketsSubmitted()) {
             return 0;
         }
         return -1;
