@@ -12,6 +12,7 @@
     <string name="register">Register</string>
     <string name="forgot_password">Forgot password?</string>
     <string name="admob_application_id" translatable="false">ca-app-pub-3199244267160640~6527894766</string>
+    <string name="admob_main_ad_id" translatable="false">ca-app-pub-3199244267160640/4278975683</string>
     <string name="facebook_application_id" translatable="false">250781600263925</string>
     <string name="facebook_login_protocol_scheme" translatable="false">fb250781600263925</string>
     <string name="settings">Settings</string>

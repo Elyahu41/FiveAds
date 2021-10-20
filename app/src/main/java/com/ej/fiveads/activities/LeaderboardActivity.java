@@ -138,6 +138,7 @@ public class LeaderboardActivity extends AppCompatActivity {
                         .orderByChild("submittedTickets")
                         .limitToFirst(50);
                 Task<DataSnapshot> usersSnapshot = query.get();
+                //noinspection StatementWithEmptyBody
                 while (!usersSnapshot.isComplete()) { }//wait for the query to finish to get back to us
                 DataSnapshot result = usersSnapshot.getResult();
                 HashMap<?,?> hashMapOfUIDs = (HashMap<?,?>) (result != null ? result.getValue() : null);

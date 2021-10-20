@@ -140,9 +140,15 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                 String updatedUsableTickets = String.format(Locale.ENGLISH, "%,d", mNumberOfUsableTickets - mUserSelectedTicketsToSubmit);
                 String usableTickets = "Usable tickets: " + updatedUsableTickets;
                 mTicketsTV.setText(usableTickets);
+                String message;
+                if (mUserSelectedTicketsToSubmit == 1) {
+                    message = "You have submitted " + mUserSelectedTicketsToSubmit + " ticket!";
+                } else {
+                    message = "You have submitted " + mUserSelectedTicketsToSubmit + " tickets!";
+                }
                 new AlertDialog.Builder(this)
                         .setTitle("Tickets Submitted!")
-                        .setMessage("You have submitted " + mUserSelectedTicketsToSubmit + " ticket(s)!")
+                        .setMessage(message)
                         .setPositiveButton("Ok", (dialog, which) -> { })
                         .create()
                         .show();

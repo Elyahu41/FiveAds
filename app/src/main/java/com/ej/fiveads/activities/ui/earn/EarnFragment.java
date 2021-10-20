@@ -163,9 +163,9 @@ public class EarnFragment extends Fragment {
         };
     }
 
-    private void initializeAds() {//TODO find out how to implement mediation
+    private void initializeAds() {
         MobileAds.initialize(requireContext(), initializationStatus -> RewardedAd.load(requireActivity(),
-                "ca-app-pub-3940256099942544/5224354917",//TODO replace with ca-app-pub-3199244267160640/4278975683
+                getString(R.string.admob_main_ad_id),// replace with "ca-app-pub-3940256099942544/5224354917" for development
                 new AdRequest.Builder().build(),
                 new RewardedAdLoadCallback() {
                     @Override
