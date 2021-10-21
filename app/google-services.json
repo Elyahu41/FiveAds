@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "708817051626",
+    "firebase_url": "https://five-ads-default-rtdb.firebaseio.com",
     "project_id": "five-ads",
     "storage_bucket": "five-ads.appspot.com"
   },
@@ -13,6 +14,22 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "708817051626-auhqo3s9jgq7hl6jvk0enlmi844e3mac.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ej.fiveads",
+            "certificate_hash": "714c02e7a05c71a841982ee92af70ece509f55d1"
+          }
+        },
+        {
+          "client_id": "708817051626-ds5ucn37ja0ffij3jtr6m94qbenfk583.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ej.fiveads",
+            "certificate_hash": "5087a8412b31536a323cceda1f35954a93f49c45"
+          }
+        },
         {
           "client_id": "708817051626-qcvo5ecs77k0ij1j7jprq7kdst88iehc.apps.googleusercontent.com",
           "client_type": 3
@@ -32,7 +49,8 @@
             }
           ]
         }
-      }
+      },
+      "admob_app_id": "ca-app-pub-3199244267160640~6527894766"
     }
   ],
   "configuration_version": "1"

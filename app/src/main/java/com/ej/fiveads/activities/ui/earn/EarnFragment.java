@@ -115,7 +115,7 @@ public class EarnFragment extends Fragment {
                     recreateTimer(rewardItem);
                     Log.d(TAG, "The user earned the reward.");
                     int rewardAmount = rewardItem.getAmount();//should be only 5
-                    //if (rewardItem.getType().equals("Tickets")) {//TODO test
+                    if (rewardItem.getType().equals("Tickets")) {//TODO test
                         mTicketsDatabase.child(mFirebaseUser.getUid()).child("usableTickets").setValue(mNumberOfUsableTickets + rewardAmount);
                         mTicketsDatabase.child(mFirebaseUser.getUid()).child("totalTicketsEarned").setValue(mNumberOfTotalTickets + rewardAmount);
                         if (mEnergyAmountAsInt > 0) {
@@ -128,7 +128,7 @@ public class EarnFragment extends Fragment {
                         String updatedEnergy = String.valueOf(mEnergyAmountAsInt);
                         mEnergyAmount.setText(updatedEnergy);
                         mSharedPreferences.edit().putInt(mCurrentKeyForTheDay, mEnergyAmountAsInt).apply();
-                   // }
+                   }
                 });
             } else {
                 Toast.makeText(requireContext(), "Ad not ready", Toast.LENGTH_SHORT).show();
@@ -140,7 +140,7 @@ public class EarnFragment extends Fragment {
     }
 
     private void recreateTimer(RewardItem rewardItem) {
-        mCountDownTimer = new CountDownTimer(2500, 250) {
+        mCountDownTimer = new CountDownTimer(2500, 500) {
 
             int currentTickets = mNumberOfUsableTickets;
             final int FINAL_TICKETS = currentTickets + rewardItem.getAmount();
