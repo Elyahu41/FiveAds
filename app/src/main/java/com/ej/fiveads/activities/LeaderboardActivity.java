@@ -36,28 +36,31 @@ public class LeaderboardActivity extends AppCompatActivity {
 
     private FirebaseUser mFirebaseUser;
     private DatabaseReference mLeaderboardsDatabase;
-    private final ArrayList<String > leaderBoardReferences = new ArrayList<>();
+    private final ArrayList<String > mLeaderBoardReferences = new ArrayList<>();
     private String mCurrentLeaderboardDate;
     private final String TAG = "LeaderboardActivity";
     private int mTicketsAlreadySubmitted;
     private int mCurrentLeaderboardRef = 0;
-    private ArrayList<UserData> mUserDataArrayList = new ArrayList<>();
+    private final ArrayList<UserData> mUserDataArrayList = new ArrayList<>();
+    private final ArrayList<String> mTitleList = new ArrayList<>();
     private RecyclerView mLeaderboardRecyclerView;
     private TextView mLeaderboardCurrentUser;
     private TextView mLeaderboardCurrentUserTickets;
+    private int mCurrentLeaderboardTitle;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {//.getRef().orderByValue()
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_leaderboard);
         Objects.requireNonNull(getSupportActionBar()).hide();
 
-        initializeLeaderboardReferences();
+        TextView leaderboardTitle = findViewById(R.id.leaderboardTitle);
+        leaderboardTitle.setText(getString(R.string._1_raffle));
+
+        fillTitleList();
+        fillLeaderboardReferencesList();
 
         Calendar calendar = Calendar.getInstance();
-        TextView leaderboardTitle = findViewById(R.id.leaderboardTitle);
-        leaderboardTitle.setText(getString(R.string._20_raffle));//TODO change title with added leaderboards
-
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
 
@@ -73,24 +76,66 @@ public class LeaderboardActivity extends AppCompatActivity {
             if (mCurrentLeaderboardDate.equals("Leaderboards2021Oct")) {
                 mCurrentLeaderboardDate = "Leaderboards2021Nov";//TODO remove after this month and test
             }
-            initializeDatabaseListeners();//to see the value of total and usable tickets
+            initializeDatabaseListener();
         }
 
         mLeaderboardRecyclerView = findViewById(R.id.leaderboardRV);
-        mLeaderboardRecyclerView.setLayoutManager(new GridLayoutManager(getApplicationContext(), 1));
+        mLeaderboardRecyclerView.setLayoutManager(new GridLayoutManager(this, 1));
         mLeaderboardRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-        mLeaderboardRecyclerView.setAdapter(new LeaderboardAdapter(mUserDataArrayList, getApplicationContext()));
+        mLeaderboardRecyclerView.setAdapter(new LeaderboardAdapter(mUserDataArrayList, this));
 
         mLeaderboardCurrentUser = findViewById(R.id.leaderboardCurrentUser);
-        String currentUserScore = "You: " + mFirebaseUser.getDisplayName() + " " + mTicketsAlreadySubmitted;
+        String currentUserScore = "You: " + mFirebaseUser.getDisplayName();
         mLeaderboardCurrentUser.setText(currentUserScore);
 
         mLeaderboardCurrentUserTickets = findViewById(R.id.leaderboardCurrentUserTickets);
-        mLeaderboardCurrentUserTickets.setText("0");
-    }//TODO add buttons that change the leaderboard, add an int to go next / subtract to go back
+        mLeaderboardCurrentUserTickets.setText(String.valueOf(mTicketsAlreadySubmitted));
 
-    private void initializeLeaderboardReferences() {//add more leaderboards here in the future
-        leaderBoardReferences.add("20Raffle");
+        TextView mLeaderboardLeft = findViewById(R.id.leaderboardTitleLeft);
+        mLeaderboardLeft.setOnClickListener(v -> {
+            mCurrentLeaderboardTitle--;
+            if (mCurrentLeaderboardTitle < 0) {
+                mCurrentLeaderboardTitle = mTitleList.size() - 1;
+            }
+            leaderboardTitle.setText(mTitleList.get(mCurrentLeaderboardTitle));
+
+            mCurrentLeaderboardRef--;
+            if (mCurrentLeaderboardRef < 0) {
+                mCurrentLeaderboardRef = mLeaderBoardReferences.size() - 1;
+            }
+            initializeDatabaseListener();
+        });
+
+        TextView mLeaderboardRight = findViewById(R.id.leaderboardTitleRight);
+        mLeaderboardRight.setOnClickListener(v -> {
+            mCurrentLeaderboardTitle++;
+            if (mCurrentLeaderboardTitle > mTitleList.size() - 1) {
+                mCurrentLeaderboardTitle = 0;
+            }
+            leaderboardTitle.setText(mTitleList.get(mCurrentLeaderboardTitle));
+
+            mCurrentLeaderboardRef++;
+            if (mCurrentLeaderboardRef > mLeaderBoardReferences.size() - 1) {
+                mCurrentLeaderboardRef = 0;
+            }
+            initializeDatabaseListener();
+        });
+    }
+
+    private void fillTitleList() {
+        mTitleList.add(getString(R.string._1_raffle));
+        mTitleList.add(getString(R.string._5_raffle));
+        mTitleList.add(getString(R.string._10_raffle));
+        mTitleList.add(getString(R.string._20_raffle));
+        mTitleList.add(getString(R.string._50_raffle));
+    }
+
+    private void fillLeaderboardReferencesList() {
+        mLeaderBoardReferences.add("1Raffle");
+        mLeaderBoardReferences.add("5Raffle");
+        mLeaderBoardReferences.add("10Raffle");
+        mLeaderBoardReferences.add("20Raffle");
+        mLeaderBoardReferences.add("50Raffle");
     }
 
     private void rankListOfUsers() {
@@ -115,24 +160,24 @@ public class LeaderboardActivity extends AppCompatActivity {
         }
     }
 
-    private void initializeDatabaseListeners() {
+    private void initializeDatabaseListener() {
         ValueEventListener submittedTicketsListener = new ValueEventListener() {// Read from the database whenever there's a change
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.child(leaderBoardReferences.get(mCurrentLeaderboardRef))
+                if (dataSnapshot.child(mLeaderBoardReferences.get(mCurrentLeaderboardRef))
                         .child(mCurrentLeaderboardDate)
                         .child(mFirebaseUser.getUid())
                         .child("submittedTickets")
                         .getValue(Integer.class) != null) {
                     //noinspection ConstantConditions
-                    mTicketsAlreadySubmitted = dataSnapshot.child(leaderBoardReferences.get(mCurrentLeaderboardRef))
+                    mTicketsAlreadySubmitted = dataSnapshot.child(mLeaderBoardReferences.get(mCurrentLeaderboardRef))
                             .child(mCurrentLeaderboardDate)
                             .child(mFirebaseUser.getUid())
                             .child("submittedTickets")
                             .getValue(Integer.class);//Objects.requireNonNull() did not work
                 }
                 Query query = dataSnapshot
-                        .child(leaderBoardReferences.get(mCurrentLeaderboardRef))
+                        .child(mLeaderBoardReferences.get(mCurrentLeaderboardRef))
                         .child(mCurrentLeaderboardDate)
                         .getRef()
                         .orderByChild("submittedTickets")
@@ -142,9 +187,9 @@ public class LeaderboardActivity extends AppCompatActivity {
                 while (!usersSnapshot.isComplete()) { }//wait for the query to finish to get back to us
                 DataSnapshot result = usersSnapshot.getResult();
                 HashMap<?,?> hashMapOfUIDs = (HashMap<?,?>) (result != null ? result.getValue() : null);
-                if (hashMapOfUIDs != null) {//only happens if no one submitted tickets yet for the current month
+                mUserDataArrayList.clear();
+                if (hashMapOfUIDs != null) {//only null if no one submitted tickets yet for the current month
                     Collection<?> values = hashMapOfUIDs.values();
-                    mUserDataArrayList.clear();
                     for (Object o : values) {
                         HashMap<?,?> hashMap = (HashMap<?,?>) o;
                         Collection<?> usernameAndTickets = hashMap.values();
@@ -156,9 +201,8 @@ public class LeaderboardActivity extends AppCompatActivity {
                         }
                     }
                     rankListOfUsers();
-                    mLeaderboardRecyclerView.setAdapter(new LeaderboardAdapter(mUserDataArrayList, getApplicationContext()));
                 }
-
+                mLeaderboardRecyclerView.setAdapter(new LeaderboardAdapter(mUserDataArrayList, getApplicationContext()));
                 mLeaderboardCurrentUser = findViewById(R.id.leaderboardCurrentUser);
                 String currentUser = "You: " + mFirebaseUser.getDisplayName();
                 mLeaderboardCurrentUser.setText(currentUser);
@@ -170,6 +214,6 @@ public class LeaderboardActivity extends AppCompatActivity {
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         };
-        mLeaderboardsDatabase.addValueEventListener(submittedTicketsListener);//for leaderboards and tickets submitted
+        mLeaderboardsDatabase.addValueEventListener(submittedTicketsListener);//for current leaderboard
     }//FIXME right now the leaderboards are updated whenever there is a change, which is awesome. However, it is taxing, we should change this setting to a one time event listener in the future
 }

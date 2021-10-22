@@ -22,9 +22,17 @@
     <string name="title_activity_settings">Settings</string>
     <string name="come_back_tomorrow">Come back tomorrow!</string>
     <string name="energy">Energy</string>
+    <string name="_1_raffle">$1 Raffle</string>
+    <string name="_5_raffle">$5 Raffle</string>
+    <string name="_10_raffle">$10 Raffle</string>
     <string name="_20_raffle">$20 Raffle</string>
+    <string name="_50_raffle">$50 Raffle</string>
     <string name="twenty_raffle">Twenty Raffle</string>
+    <string name="win_1">Win $1!</string>
+    <string name="win_5">Win $5!</string>
+    <string name="win_10">Win $10!</string>
     <string name="win_20">Win $20!</string>
+    <string name="win_50">Win $50!</string>
     <string name="leaderboards">LeaderBoards</string>
     <string name="submit">Submit</string>
     <string name="tickets_to_submit">Tickets to submit</string>

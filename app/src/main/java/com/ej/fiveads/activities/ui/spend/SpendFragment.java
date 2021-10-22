@@ -31,7 +31,7 @@ public class SpendFragment extends Fragment {
         binding = FragmentSpendBinding.inflate(inflater, container, false);
 
         RecyclerView mRecyclerView = binding.recyclerview;
-        mRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 1));
+        mRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         mRecyclerView.setAdapter(new RaffleAdapter(requireContext(), getListOfRaffles()));
 
         FloatingActionButton leaderboard = binding.leaderboardButton;
@@ -48,9 +48,13 @@ public class SpendFragment extends Fragment {
 
     private List<RaffleData> getListOfRaffles() {
         List<RaffleData> mRaffleList = new ArrayList<>();
+        mRaffleList.add(new RaffleData(getString(R.string.win_1), R.drawable.one_raffle, "1Raffle"));
+        mRaffleList.add(new RaffleData(getString(R.string.win_5), R.drawable.five_raffle, "5Raffle"));
+        mRaffleList.add(new RaffleData(getString(R.string.win_10), R.drawable.ten_raffle, "10Raffle"));
         mRaffleList.add(new RaffleData(getString(R.string.win_20), R.drawable.twenty_raffle, "20Raffle"));
+        mRaffleList.add(new RaffleData(getString(R.string.win_50), R.drawable.fifty_raffle, "50Raffle"));
+        mRaffleList.add(new RaffleData("More Coming Soon!", R.drawable.coming_soon, "$"));//$ isn't a valid database character
         mRaffleList.add(new RaffleData("More Coming Soon!", R.drawable.coming_soon, "$"));
-        mRaffleList.add(new RaffleData("More Coming Soon!", R.drawable.coming_soon, "$"));//just added this to be able to scroll through the recyclerview, remove when more raffles are added
         return mRaffleList;
     }
 }

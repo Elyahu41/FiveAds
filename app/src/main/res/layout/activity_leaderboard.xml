@@ -12,16 +12,32 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="@string/leaderboard"
+        android:textAllCaps="true"
         android:textColor="?android:attr/textColorSecondary"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:textAllCaps="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/leaderboardTitleLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#0E65CE"
+        android:gravity="center"
+        android:textAllCaps="true"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        app:drawableStartCompat="@android:drawable/ic_media_rew"
+        app:layout_constraintBottom_toTopOf="@+id/leaderboardRV"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/leaderboardTop" />
+
+    <TextView
         android:id="@+id/leaderboardTitle"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="#0E65CE"
         android:gravity="center"
@@ -29,7 +45,24 @@
         android:textAllCaps="true"
         android:textSize="26sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/leaderboardTitleRight"
+        app:layout_constraintStart_toEndOf="@+id/leaderboardTitleLeft"
+        app:layout_constraintTop_toBottomOf="@+id/leaderboardTop" />
+
+    <TextView
+        android:id="@+id/leaderboardTitleRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#0E65CE"
+        android:gravity="center"
+        android:textAllCaps="true"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        app:drawableEndCompat="@android:drawable/ic_media_ff"
+        app:layout_constraintBottom_toTopOf="@+id/leaderboardRV"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/leaderboardTop" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -45,8 +78,8 @@
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:background="@color/purple"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
