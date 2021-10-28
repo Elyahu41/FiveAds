@@ -91,7 +91,7 @@ public class EarnFragment extends Fragment {
         initializeStateListener();//for user login
 
         if (mFirebaseUser != null) {
-            mTicketsDatabase = mDatabase.getReference(mTopLevelDatabase);//we use the UID for the number of USABLE tickets the user has
+            mTicketsDatabase = mDatabase.getReference(mTopLevelDatabase);//we use the User/UID for the number of USABLE tickets the user has
             initializeDatabaseListener();//to see the value of total and usable tickets
         }
 

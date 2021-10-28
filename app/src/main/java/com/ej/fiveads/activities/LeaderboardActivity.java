@@ -196,7 +196,10 @@ public class LeaderboardActivity extends AppCompatActivity {
                         Iterator<?> iterator = usernameAndTickets.iterator();
                         while (iterator.hasNext()) {
                             String displayName = iterator.next().toString();
-                            Long value = (Long) iterator.next();
+                            Long value = 0L;
+                            if (iterator.hasNext()) {
+                                value = (Long) iterator.next();
+                            }
                             mUserDataArrayList.add(new UserData(displayName, value.intValue()));
                         }
                     }

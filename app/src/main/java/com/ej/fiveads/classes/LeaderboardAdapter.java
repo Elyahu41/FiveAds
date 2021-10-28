@@ -44,7 +44,7 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
         } else if (mUserList.get(position).getRank() == 3) {
             holder.mUserRank.setBackground(AppCompatResources.getDrawable(mContext, R.drawable.icons8bronzemedal48));
             holder.itemView.setBackground(AppCompatResources.getDrawable(mContext, R.color.bronze));
-        } else if (mUserList.get(position).getRank() % 2 == 1) {
+        } else if (position % 2 == 1) {
             holder.mUserRank.setText(String.format("%s.", mUserList.get(position).getRank()));
             holder.itemView.setBackground(AppCompatResources.getDrawable(mContext, R.color.purple_200));
         } else {
