@@ -1,9 +1,12 @@
 package com.ej.fiveads.activities.ui.earn;
 
 import static android.app.Activity.RESULT_OK;
+import static android.content.Context.ALARM_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
 import static com.ej.fiveads.activities.MainActivity.mDeviceDefaults;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -22,6 +25,7 @@ import androidx.fragment.app.Fragment;
 
 import com.ej.fiveads.R;
 import com.ej.fiveads.databinding.FragmentEarnBinding;
+import com.ej.fiveads.notifications.DailyNotifications;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract;
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult;
@@ -45,6 +49,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -71,7 +76,7 @@ public class EarnFragment extends Fragment {
     private TextView mCountDown;
     private static RewardedAd mRewardedAd;
     private SharedPreferences mSharedPreferences;
-    private final String TAG = "MainActivity";
+    private final String TAG = "EarnFragment";
     private final String mTopLevelDatabase = "Users";
     private String mCurrentKeyForTheDay;
     private boolean isAddingTickets = false;
@@ -115,7 +120,7 @@ public class EarnFragment extends Fragment {
                     recreateTimer(rewardItem);
                     Log.d(TAG, "The user earned the reward.");
                     int rewardAmount = rewardItem.getAmount();//should be only 5
-                    if (rewardItem.getType().equals("Tickets")) {//TODO test
+                    if (rewardItem.getType().equals("Tickets")) {
                         mTicketsDatabase.child(mFirebaseUser.getUid()).child("usableTickets").setValue(mNumberOfUsableTickets + rewardAmount);
                         mTicketsDatabase.child(mFirebaseUser.getUid()).child("totalTicketsEarned").setValue(mNumberOfTotalTickets + rewardAmount);
                         if (mEnergyAmountAsInt > 0) {
@@ -136,6 +141,7 @@ public class EarnFragment extends Fragment {
             }
         });
 
+        setNotifications();
         return binding.getRoot();
     }
 
@@ -356,5 +362,27 @@ public class EarnFragment extends Fragment {
                 Log.w(TAG, String.valueOf(Objects.requireNonNull(result.getIdpResponse().getError()).getErrorCode()));
             }
         }
+    }
+
+    private void setNotifications() {
+        //if (!mSharedPreferences.getBoolean("notificationsSet", false)) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, 14);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            if (calendar.getTime().compareTo(new Date()) < 0) {
+                calendar.add(Calendar.DATE, 1);
+            }
+            PendingIntent dailyPendingIntent = PendingIntent.getBroadcast(requireContext(), 0,
+                    new Intent(requireContext(), DailyNotifications.class), PendingIntent.FLAG_IMMUTABLE);
+            AlarmManager am = (AlarmManager) requireContext().getSystemService(ALARM_SERVICE);
+            am.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 0, dailyPendingIntent);
+        try {
+            dailyPendingIntent.send();
+        } catch (PendingIntent.CanceledException e) {
+            e.printStackTrace();
+        }
+        //mSharedPreferences.edit().putBoolean("notificationsSet", true).apply();
+        //}
     }
 }

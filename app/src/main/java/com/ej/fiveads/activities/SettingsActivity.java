@@ -99,9 +99,9 @@ public class SettingsActivity extends AppCompatActivity {
                 contactUsPref.setOnPreferenceClickListener(v -> {
                     Intent email = new Intent(Intent.ACTION_SENDTO);
                     email.setData(Uri.parse("mailto:"));
-                    email.putExtra(Intent.EXTRA_EMAIL, new String[]{"elyahujacobi@gmail.com"}); //developer's email
+                    email.putExtra(Intent.EXTRA_EMAIL, new String[]{"fiveadshelp@gmail.com"}); //developer's email
                     email.putExtra(Intent.EXTRA_SUBJECT,"Support Ticket"); //Email's Subject
-                    email.putExtra(Intent.EXTRA_TEXT,"Dear Mr. Elyahu,"); //Email's Greeting text
+                    email.putExtra(Intent.EXTRA_TEXT,"Dear Five Ads Team,"); //Email's Greeting text
 
                     if (packageManager.resolveActivity(email,0) != null) { // there is an activity that can handle it
                         startActivity(email);

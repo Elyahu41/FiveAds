@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton mSettingFab;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {//TODO change display name, splash screen, maybe add another ad
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Objects.requireNonNull(getSupportActionBar()).hide();
