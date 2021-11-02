@@ -365,7 +365,7 @@ public class EarnFragment extends Fragment {
     }
 
     private void setNotifications() {
-        //if (!mSharedPreferences.getBoolean("notificationsSet", false)) {
+        if (!mSharedPreferences.getBoolean("notificationsSet", false)) {
             Calendar calendar = Calendar.getInstance();
             calendar.set(Calendar.HOUR_OF_DAY, 14);
             calendar.set(Calendar.MINUTE, 0);
@@ -377,12 +377,7 @@ public class EarnFragment extends Fragment {
                     new Intent(requireContext(), DailyNotifications.class), PendingIntent.FLAG_IMMUTABLE);
             AlarmManager am = (AlarmManager) requireContext().getSystemService(ALARM_SERVICE);
             am.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 0, dailyPendingIntent);
-        try {
-            dailyPendingIntent.send();
-        } catch (PendingIntent.CanceledException e) {
-            e.printStackTrace();
+            mSharedPreferences.edit().putBoolean("notificationsSet", true).apply();
         }
-        //mSharedPreferences.edit().putBoolean("notificationsSet", true).apply();
-        //}
     }
 }

@@ -14,7 +14,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.FiveAds">
+        android:theme="@style/AppTheme">
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="@string/admob_application_id" /> <!-- development: ca-app-pub-3940256099942544~3347511713 -->
@@ -25,7 +25,6 @@
         <meta-data
             android:name="applovin.sdk.key"
             android:value="ra1tdFEk5fQmRgH7WhTB49h54Xu2AFwZPalKXce3-bBFksTJAcxPuy3SsdLpiopBoDU69IvUMTPXTax1U9HEyV"/><!-- TODO see if needed -->
-
         <activity
             android:name=".activities.LeaderboardActivity"
             android:exported="false" />
@@ -38,6 +37,7 @@
             android:label="@string/title_activity_settings" />
         <activity
             android:name=".activities.MainActivity"
+            android:theme="@style/SplashTheme"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
