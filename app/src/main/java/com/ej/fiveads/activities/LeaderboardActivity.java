@@ -73,9 +73,6 @@ public class LeaderboardActivity extends AppCompatActivity {
             mCurrentLeaderboardDate = "Leaderboards" +
                     calendar.get(Calendar.YEAR) +
                     calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH);//Final String should look like Leaderboards2021Oct
-            if (mCurrentLeaderboardDate.equals("Leaderboards2021Oct")) {
-                mCurrentLeaderboardDate = "Leaderboards2021Nov";//TODO remove after this month and test
-            }
             initializeDatabaseListener();
         }
 

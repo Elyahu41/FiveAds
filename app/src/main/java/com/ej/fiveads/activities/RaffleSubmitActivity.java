@@ -1,5 +1,8 @@
 package com.ej.fiveads.activities;
 
+import static com.ej.fiveads.activities.MainActivity.mDeviceDefaults;
+
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -13,6 +16,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.ej.fiveads.R;
+import com.google.android.play.core.review.ReviewInfo;
+import com.google.android.play.core.review.ReviewManager;
+import com.google.android.play.core.review.ReviewManagerFactory;
+import com.google.android.play.core.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -36,8 +43,9 @@ public class RaffleSubmitActivity extends AppCompatActivity {
     private TextView mTicketsTV;
     private String mCurrentLeaderboardDate;
     private Bundle mBundle;
-    private final String TAG = "RaffleActivity";
+    private final String TAG = "RaffleSubmitActivity";
     private TextView mTicketsAlreadySubmittedTV;
+    private SharedPreferences mSharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +53,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
         setContentView(R.layout.activity_raffle_submit);
         Objects.requireNonNull(getSupportActionBar()).hide();
         Calendar calendar = Calendar.getInstance();
+        mSharedPreferences = getSharedPreferences(mDeviceDefaults, MODE_PRIVATE);
 
         TextView title = findViewById(R.id.titleTextView);
         ImageView imageView = findViewById(R.id.submitImage);
@@ -74,9 +83,6 @@ public class RaffleSubmitActivity extends AppCompatActivity {
             mCurrentLeaderboardDate = "Leaderboards" +
                     calendar.get(Calendar.YEAR) +
                     calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH);//Final String should look like Leaderboards2021Oct
-            if (mCurrentLeaderboardDate.equals("Leaderboards2021Oct")) {
-                mCurrentLeaderboardDate = "Leaderboards2021Nov";//TODO remove after this month and test
-            }
             initializeDatabaseListeners();//to see the value of total and usable tickets
         }
 
@@ -149,11 +155,32 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                 new AlertDialog.Builder(this)
                         .setTitle("Tickets Submitted!")
                         .setMessage(message)
-                        .setPositiveButton("Ok", (dialog, which) -> { })
+                        .setPositiveButton("Ok", (dialog, which) -> launchPlayStoreReview())
                         .create()
                         .show();
             }
         });
+    }
+
+    private void launchPlayStoreReview() {
+        if (!mSharedPreferences.getBoolean("hasBeenAskedToReview", false)) {
+        ReviewManager manager = ReviewManagerFactory.create(this);
+        Task<ReviewInfo> request = manager.requestReviewFlow();
+        request.addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {// We can get the ReviewInfo object
+                ReviewInfo reviewInfo = task.getResult();
+                Task<Void> flow = manager.launchReviewFlow(this, reviewInfo);
+                flow.addOnCompleteListener(task2 -> {
+                    if (task2.isSuccessful()) {
+                        Log.d(TAG, "Review Successful");//TODO test
+                    }
+                });
+            } else {// There was some problem, log or handle the error code.
+                Log.d(TAG, "Error: " + Objects.requireNonNull(task.getException()).getMessage());
+            }
+        });
+            mSharedPreferences.edit().putBoolean("hasBeenAskedToReview", true).apply();
+        }
     }
 
     private void initializeDatabaseListeners() {

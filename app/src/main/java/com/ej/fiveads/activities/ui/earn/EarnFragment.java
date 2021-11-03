@@ -6,16 +6,19 @@ import static android.content.Context.MODE_PRIVATE;
 import static com.ej.fiveads.activities.MainActivity.mDeviceDefaults;
 
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +34,7 @@ import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract;
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
@@ -39,6 +43,7 @@ import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -81,10 +86,12 @@ public class EarnFragment extends Fragment {
     private String mCurrentKeyForTheDay;
     private boolean isAddingTickets = false;
     private CountDownTimer mCountDownTimer;
+    private AdView mAdView;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        initializeAds();
         //EarnViewModel earnViewModel = new ViewModelProvider(this).get(EarnViewModel.class);
+        binding = FragmentEarnBinding.inflate(inflater, container, false);
+        initializeAds();
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance();
@@ -101,7 +108,6 @@ public class EarnFragment extends Fragment {
         }
 
         mSharedPreferences = requireActivity().getSharedPreferences(mDeviceDefaults, MODE_PRIVATE);
-        binding = FragmentEarnBinding.inflate(inflater, container, false);
         mTicketAmount = binding.ticketAmount;
         mEnergyAmount = binding.amountOfEnergyRemaining;
         mWatchAdButton = binding.watchAd;
@@ -142,6 +148,7 @@ public class EarnFragment extends Fragment {
         });
 
         setNotifications();
+        alertUserToChangeDisplayName();
         return binding.getRoot();
     }
 
@@ -170,63 +177,55 @@ public class EarnFragment extends Fragment {
     }
 
     private void initializeAds() {
-        MobileAds.initialize(requireContext(), initializationStatus -> RewardedAd.load(requireActivity(),
-                getString(R.string.admob_main_ad_id),// replace with "ca-app-pub-3940256099942544/5224354917" for development
-                new AdRequest.Builder().build(),
-                new RewardedAdLoadCallback() {
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {// Handle the error.
-                        Log.d(TAG, loadAdError.getMessage());
-                        mRewardedAd = null;
-                    }
-
-                    @Override
-                    public void onAdLoaded(@NonNull RewardedAd rewardedAd) {
-                        mRewardedAd = rewardedAd;
-                        mRewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
-                            @Override
-                            public void onAdShowedFullScreenContent() {// Called when ad is shown.
-                                Log.d(TAG, "Ad was shown.");
-                            }
-
-                            @Override
-                            public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) { // Called when ad fails to show.
-                                Log.d(TAG, "Ad failed to show.");
-                            }
-
-                            @Override
-                            public void onAdDismissedFullScreenContent() {// Called when ad is dismissed.
-                                Log.d(TAG, "Ad was dismissed.");
-                                mRewardedAd = null;// Set the ad reference to null so you don't show the ad a second time.
-                                mWatchAdButton.setEnabled(false);
-                                mWatchAdButton.setText(R.string.ad_loading);
-                                if (mEnergyAmountAsInt != 0) {
-                                    initializeAds();
+        MobileAds.initialize(requireContext(), initializationStatus -> {
+                    RewardedAd.load(requireActivity(),
+                            getString(R.string.admob_main_ad_id),// replace with "ca-app-pub-3940256099942544/5224354917" for development
+                            new AdRequest.Builder().build(),
+                            new RewardedAdLoadCallback() {
+                                @Override
+                                public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {// Handle the error.
+                                    Log.d(TAG, loadAdError.getMessage());
+                                    mRewardedAd = null;
                                 }
-                                mCountDownTimer.start();
-                            }
-                        });
-                        if (mEnergyAmountAsInt != 0) {
-                            mWatchAdButton.setEnabled(true);
-                            mWatchAdButton.setText(R.string.watch_ad);
-                        }
-                        Log.d(TAG, "Ad was loaded.");
-                    }
-                }));
-    }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        updateCurrentEnergy();
-        if (mEnergyAmountAsInt <= 0) {//should never be less than 0, but it covers edge cases
-            mWatchAdButton.setEnabled(false);
-            mWatchAdButton.setText(R.string.come_back_tomorrow);
-            startCountdownTimer();
-        }
-        if (!isAddingTickets) {
-            mTicketAmount.setText(String.valueOf(mNumberOfUsableTickets));
-        }
+                                @Override
+                                public void onAdLoaded(@NonNull RewardedAd rewardedAd) {
+                                    mRewardedAd = rewardedAd;
+                                    mRewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                                        @Override
+                                        public void onAdShowedFullScreenContent() {// Called when ad is shown.
+                                            Log.d(TAG, "Ad was shown.");
+                                        }
+
+                                        @Override
+                                        public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) { // Called when ad fails to show.
+                                            Log.d(TAG, "Ad failed to show.");
+                                        }
+
+                                        @Override
+                                        public void onAdDismissedFullScreenContent() {// Called when ad is dismissed.
+                                            Log.d(TAG, "Ad was dismissed.");
+                                            mRewardedAd = null;// Set the ad reference to null so you don't show the ad a second time.
+                                            mWatchAdButton.setEnabled(false);
+                                            mWatchAdButton.setText(R.string.ad_loading);
+                                            if (mEnergyAmountAsInt != 0) {
+                                                initializeAds();
+                                            }
+                                            mCountDownTimer.start();
+                                        }
+                                    });
+                                    if (mEnergyAmountAsInt != 0) {
+                                        mWatchAdButton.setEnabled(true);
+                                        mWatchAdButton.setText(R.string.watch_ad);
+                                    }
+                                    Log.d(TAG, "Ad was loaded.");
+                                }
+                            });
+                    mAdView = binding.adView;
+                    if (mAdView != null) {
+                        mAdView.loadAd(new AdRequest.Builder().build());
+                    }
+        });
     }
 
     private void updateCurrentEnergy() {
@@ -269,11 +268,38 @@ public class EarnFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        updateCurrentEnergy();
+        if (mEnergyAmountAsInt <= 0) {//should never be less than 0, but it covers edge cases
+            mWatchAdButton.setEnabled(false);
+            mWatchAdButton.setText(R.string.come_back_tomorrow);
+            startCountdownTimer();
+        }
+        if (!isAddingTickets) {
+            mTicketAmount.setText(String.valueOf(mNumberOfUsableTickets));
+        }
+        if (mAdView != null) {
+            mAdView.resume();
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (mAdView != null) {
+            mAdView.destroy();
+        }
         binding = null;
     }
 
+    @Override
+    public void onPause() {
+        if (mAdView != null) {
+            mAdView.pause();
+        }
+        super.onPause();
+    }
 
     @Override
     public void onStart() {
@@ -378,6 +404,30 @@ public class EarnFragment extends Fragment {
             AlarmManager am = (AlarmManager) requireContext().getSystemService(ALARM_SERVICE);
             am.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 0, dailyPendingIntent);
             mSharedPreferences.edit().putBoolean("notificationsSet", true).apply();
+        }
+    }
+
+    private void alertUserToChangeDisplayName() {
+        if (!mSharedPreferences.getBoolean("usernameSet", false)) {
+        final EditText edittext = new EditText(requireContext());
+        edittext.setText(mFirebaseUser.getDisplayName());
+        edittext.setGravity(Gravity.CENTER);
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Create a username!")
+                .setMessage("Enter a username others can see you by:")
+                .setView(edittext)
+                .setPositiveButton("Ok", (dialog, which) -> {
+                    String username = edittext.getText().toString();
+                    mFirebaseUser.updateProfile(
+                            new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(username)
+                                    .build());
+                })
+                .setNegativeButton("No thanks", (dialog, which) ->
+                        Toast.makeText(requireContext(), "Change your username in the settings at any time!", Toast.LENGTH_LONG).show())
+                .create()
+                .show();
+            mSharedPreferences.edit().putBoolean("usernameSet", true).apply();
         }
     }
 }
