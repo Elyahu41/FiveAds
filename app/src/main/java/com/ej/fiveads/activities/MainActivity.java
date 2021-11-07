@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton mSettingFab;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {//TODO splash screen zoom in, add timer for end of the month, another ad in RV
+    protected void onCreate(Bundle savedInstanceState) {//TODO splash screen zoom in
         setTheme(R.style.AppTheme);//splash screen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);

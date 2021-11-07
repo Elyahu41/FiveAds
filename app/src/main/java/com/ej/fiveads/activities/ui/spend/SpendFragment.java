@@ -92,11 +92,10 @@ public class SpendFragment extends Fragment {
             mRaffleList.add(mNativeAdArrayList.get(3));
         }
         mRaffleList.add(new RaffleData(getString(R.string.win_50), R.drawable.amazongc, "50Raffle"));
-        mRaffleList.add(new RaffleData("More \nComing Soon!", R.drawable.coming_soon, "$"));//$ isn't a valid database character
         if (mNativeAdArrayList.size() >= 5) {
             mRaffleList.add(mNativeAdArrayList.get(4));
         }
-        mRaffleList.add(new RaffleData("More \nComing Soon!", R.drawable.coming_soon, "$"));
+        mRaffleList.add(new RaffleData("More \nComing Soon!", R.drawable.coming_soon, "$"));//$ isn't a valid database character
         return mRaffleList;
     }
 }
