@@ -4,6 +4,7 @@ import static com.ej.fiveads.activities.MainActivity.mDeviceDefaults;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,9 +29,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class RaffleSubmitActivity extends AppCompatActivity {
 
@@ -46,6 +50,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
     private final String TAG = "RaffleSubmitActivity";
     private TextView mTicketsAlreadySubmittedTV;
     private SharedPreferences mSharedPreferences;
+    private CountDownTimer mCDtimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,10 +165,56 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                         .show();
             }
         });
+        startCountdownTimer();
+    }
+
+    private void startCountdownTimer() {
+        TextView timer = findViewById(R.id.remainingTimeTextView);
+        Calendar calendar = Calendar.getInstance();
+        Calendar calendar2 = Calendar.getInstance();
+        calendar.add(Calendar.MONTH,1);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        mCDtimer = new CountDownTimer(calendar.getTimeInMillis() - calendar2.getTimeInMillis(),1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                long days = TimeUnit.MILLISECONDS.toDays(millisUntilFinished);
+                millisUntilFinished -= TimeUnit.DAYS.toMillis(days);
+                long hour = TimeUnit.MILLISECONDS.toHours(millisUntilFinished);
+                millisUntilFinished -= TimeUnit.HOURS.toMillis(hour);
+                long minutes = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished);
+                millisUntilFinished -= TimeUnit.MINUTES.toMillis(minutes);
+                long seconds = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished);
+                String timeTillEndOfTheMonth = hour + ":" + minutes + ":" + seconds;
+                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+                try {
+                    timeTillEndOfTheMonth = sdf.format(Objects.requireNonNull(sdf.parse(timeTillEndOfTheMonth)));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                String str = days + "d " + timeTillEndOfTheMonth;
+                String finalString = "Raffle ends in " + str;
+                timer.setText(finalString);
+            }
+            @Override
+            public void onFinish() {
+                startActivity(getIntent());
+            }
+        }.start();
+    }
+
+    @Override
+    protected void onPause() {
+        if (mCDtimer != null) {
+            mCDtimer.cancel();
+        }
+        super.onPause();
     }
 
     private void launchPlayStoreReview() {
-        if (!mSharedPreferences.getBoolean("hasBeenAskedToReview", false)) {
+       // if (!mSharedPreferences.getBoolean("hasBeenAskedToReview", false)) {
         ReviewManager manager = ReviewManagerFactory.create(this);
         Task<ReviewInfo> request = manager.requestReviewFlow();
         request.addOnCompleteListener(task -> {
@@ -179,8 +230,8 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                 Log.d(TAG, "Error: " + Objects.requireNonNull(task.getException()).getMessage());
             }
         });
-            mSharedPreferences.edit().putBoolean("hasBeenAskedToReview", true).apply();
-        }
+            //mSharedPreferences.edit().putBoolean("hasBeenAskedToReview", true).apply();
+       // }
     }
 
     private void initializeDatabaseListeners() {

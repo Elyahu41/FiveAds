@@ -148,7 +148,6 @@ public class EarnFragment extends Fragment {
         });
 
         setNotifications();
-        alertUserToChangeDisplayName();
         return binding.getRoot();
     }
 
@@ -218,12 +217,13 @@ public class EarnFragment extends Fragment {
                                         mWatchAdButton.setEnabled(true);
                                         mWatchAdButton.setText(R.string.watch_ad);
                                     }
-                                    Log.d(TAG, "Ad was loaded.");
+                                    Log.d(TAG, "Rewarded Ad was loaded.");
                                 }
                             });
                     mAdView = binding.adView;
                     if (mAdView != null) {
                         mAdView.loadAd(new AdRequest.Builder().build());
+                        Log.d(TAG, "Banner Ad was loaded.");
                     }
         });
     }
@@ -381,6 +381,7 @@ public class EarnFragment extends Fragment {
             if (mFirebaseUser != null) {
                 mTicketsDatabase = mDatabase.getReference(mTopLevelDatabase);
                 initializeDatabaseListener();//to see the value of total and usable tickets
+                alertUserToChangeDisplayName();
             }
         } else {
             if (result.getIdpResponse() != null) {
