@@ -193,9 +193,15 @@ public class LeaderboardActivity extends AppCompatActivity {
                         Iterator<?> iterator = usernameAndTickets.iterator();
                         while (iterator.hasNext()) {
                             String displayName = iterator.next().toString();
+                            Log.d(TAG, "Value of user: " + displayName);
                             Long value = 0L;
                             if (iterator.hasNext()) {
-                                value = (Long) iterator.next();
+                                Object object = iterator.next();
+                                if (object instanceof Long) {
+                                    value = (Long) object;
+                                } else {
+                                    Log.e(TAG, "Error reading from database! Expected long but got: " + object.toString());
+                                }
                             }
                             mUserDataArrayList.add(new UserData(displayName, value.intValue()));
                         }

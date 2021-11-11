@@ -63,6 +63,7 @@ public class RaffleAdapter extends RecyclerView.Adapter<RaffleAdapter.RaffleView
             populateNativeAdView((NativeAd) mRaffleAndAdList.get(position), adView);
             holder.mFrameLayout.addView(adView);
             holder.mCardView.setVisibility(View.GONE);
+
         }
     }
 
@@ -143,6 +144,8 @@ public class RaffleAdapter extends RecyclerView.Adapter<RaffleAdapter.RaffleView
         // have a video asset.
         VideoController vc = nativeAd.getMediaContent().getVideoController();
         if (vc.hasVideoContent()) {
+            float mediaAspectRatio = nativeAd.getMediaContent().getAspectRatio();
+            float duration = nativeAd.getMediaContent().getDuration();
             // Create a new VideoLifecycleCallbacks object and pass it to the VideoController. The
             // VideoController will call methods on this object when events occur in the video
             // lifecycle.
