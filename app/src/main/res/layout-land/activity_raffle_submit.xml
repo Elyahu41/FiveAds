@@ -68,10 +68,10 @@
         android:inputType="number"
         app:layout_constraintBottom_toTopOf="@+id/numberOfTicketsSubmittedTextView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.463"
+        app:layout_constraintHorizontal_bias="0.46"
         app:layout_constraintStart_toEndOf="@+id/submitImage"
         app:layout_constraintTop_toBottomOf="@+id/remainingTimeTextView"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.27" />
 
     <Button
         android:id="@+id/buttonMinus1"
