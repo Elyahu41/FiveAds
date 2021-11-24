@@ -17,6 +17,7 @@
     <string name="facebook_login_protocol_scheme" translatable="false">fb250781600263925</string>
     <string name="settings">Settings</string>
     <string name="watch_ad">Watch Ad!</string>
+    <string name="get_tickets">Get Tickets!</string>
     <string name="earn">Earn</string>
     <string name="spend">Spend</string>
     <string name="title_activity_settings">Settings</string>

@@ -139,7 +139,8 @@ public class EarnFragment extends Fragment {
                         String updatedEnergy = String.valueOf(mEnergyAmountAsInt);
                         mEnergyAmount.setText(updatedEnergy);
                         mSharedPreferences.edit().putInt(mCurrentKeyForTheDay, mEnergyAmountAsInt).apply();
-                   }
+                    }
+                    initializeAds();
                 });
             } else {
                 Toast.makeText(requireContext(), "Ad not ready", Toast.LENGTH_SHORT).show();
@@ -193,6 +194,8 @@ public class EarnFragment extends Fragment {
                                     mRewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
                                         @Override
                                         public void onAdShowedFullScreenContent() {// Called when ad is shown.
+                                            mWatchAdButton.setEnabled(false);
+                                            mWatchAdButton.setText(R.string.ad_loading);
                                             Log.d(TAG, "Ad was shown.");
                                         }
 
@@ -215,16 +218,14 @@ public class EarnFragment extends Fragment {
                                     });
                                     if (mEnergyAmountAsInt != 0) {
                                         mWatchAdButton.setEnabled(true);
-                                        mWatchAdButton.setText(R.string.watch_ad);
+                                        mWatchAdButton.setText(R.string.get_tickets);
                                     }
                                     Log.d(TAG, "Rewarded Ad was loaded.");
                                 }
                             });
                     mAdView = binding.adView;
-                    if (mAdView != null) {
-                        mAdView.loadAd(new AdRequest.Builder().build());
-                        Log.d(TAG, "Banner Ad was loaded.");
-                    }
+                    mAdView.loadAd(new AdRequest.Builder().build());
+                    Log.d(TAG, "Banner Ad was loaded.");
         });
     }
 
@@ -423,12 +424,32 @@ public class EarnFragment extends Fragment {
                             new UserProfileChangeRequest.Builder()
                                     .setDisplayName(username)
                                     .build());
+                    showIntroDialog();
                 })
-                .setNegativeButton("No thanks", (dialog, which) ->
-                        Toast.makeText(requireContext(), "Change your username in the settings at any time!", Toast.LENGTH_LONG).show())
+                .setNegativeButton("No thanks", (dialog, which) -> {
+                    Toast.makeText(requireContext(), "Change your username in the settings at any time!", Toast.LENGTH_LONG).show();
+                    showIntroDialog();
+                })
                 .create()
                 .show();
             mSharedPreferences.edit().putBoolean("usernameSet", true).apply();
         }
+    }
+
+    private void showIntroDialog() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Introduction")
+                .setMessage("Welcome to the 5 Ads app! The idea behind this app is extremely simple and there are only 2 steps involved.\n\n" +
+                        "Step 1. Earn tickets by watching ads (Max 5 a day). Each ad watched gives you 5 tickets. These tickets can be used to " +
+                        "potentially win cash or prizes.\n\n" +
+                        "Step 2. Submit those tickets into raffles! There are multiple raffles ongoing each month in the \"Spend\" tab. " +
+                        "The more tickets submitted the higher your chances to win are! Try and submit as many tickets as possible! " +
+                        "You can also save your tickets up for the next raffle!\n\n" +
+                        "The more ads you watch the more our income is, as our income improves, more frequent prizes and raffles will be added! " +
+                        "Please spread the word about our app!")
+                .setPositiveButton("Ok", ((dialog, which) -> {}))
+                .setCancelable(false)
+                .create()
+                .show();
     }
 }

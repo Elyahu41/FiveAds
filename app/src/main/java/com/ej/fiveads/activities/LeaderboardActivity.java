@@ -177,8 +177,7 @@ public class LeaderboardActivity extends AppCompatActivity {
                         .child(mLeaderBoardReferences.get(mCurrentLeaderboardRef))
                         .child(mCurrentLeaderboardDate)
                         .getRef()
-                        .orderByChild("submittedTickets")
-                        .limitToFirst(50);
+                        .orderByChild("submittedTickets");
                 Task<DataSnapshot> usersSnapshot = query.get();
                 //noinspection StatementWithEmptyBody
                 while (!usersSnapshot.isComplete()) { }//wait for the query to finish to get back to us
