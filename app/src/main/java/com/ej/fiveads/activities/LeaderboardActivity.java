@@ -47,6 +47,7 @@ public class LeaderboardActivity extends AppCompatActivity {
     private TextView mLeaderboardCurrentUser;
     private TextView mLeaderboardCurrentUserTickets;
     private int mCurrentLeaderboardTitle;
+    private String monthForMonthlyRaffles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,12 +56,13 @@ public class LeaderboardActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).hide();
 
         TextView leaderboardTitle = findViewById(R.id.leaderboardTitle);
-        leaderboardTitle.setText(getString(R.string._1_raffle));
+        leaderboardTitle.setText(getString(R.string._5_raffle));
 
         fillTitleList();
         fillLeaderboardReferencesList();
 
         Calendar calendar = Calendar.getInstance();
+        monthForMonthlyRaffles = calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH);
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
 
@@ -70,9 +72,13 @@ public class LeaderboardActivity extends AppCompatActivity {
 
         if (mFirebaseUser != null) {
             mLeaderboardsDatabase = database.getReference("Leaderboards");
+            while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
+                calendar.add(Calendar.DATE, 1);
+            }
             mCurrentLeaderboardDate = "Leaderboards" +
                     calendar.get(Calendar.YEAR) +
-                    calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH);//Final String should look like Leaderboards2021Oct
+                    calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH) +
+                    calendar.get(Calendar.DAY_OF_MONTH);//Final String should look like Leaderboards2021Oct20
             initializeDatabaseListener();
         }
 
@@ -96,6 +102,17 @@ public class LeaderboardActivity extends AppCompatActivity {
             }
             leaderboardTitle.setText(mTitleList.get(mCurrentLeaderboardTitle));
 
+            if (mTitleList.get(mCurrentLeaderboardTitle).equals(getString(R.string._5_raffle))) {
+                mCurrentLeaderboardDate = "Leaderboards" +
+                        calendar.get(Calendar.YEAR) +
+                        calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH) +
+                        calendar.get(Calendar.DAY_OF_MONTH);//Final String should look like Leaderboards2021Oct200
+            } else {
+                mCurrentLeaderboardDate = "Leaderboards" +
+                        calendar.get(Calendar.YEAR) +
+                        monthForMonthlyRaffles;//Final String should look like Leaderboards2021Oct
+            }
+
             mCurrentLeaderboardRef--;
             if (mCurrentLeaderboardRef < 0) {
                 mCurrentLeaderboardRef = mLeaderBoardReferences.size() - 1;
@@ -111,6 +128,17 @@ public class LeaderboardActivity extends AppCompatActivity {
             }
             leaderboardTitle.setText(mTitleList.get(mCurrentLeaderboardTitle));
 
+            if (mTitleList.get(mCurrentLeaderboardTitle).equals(getString(R.string._5_raffle))) {
+                mCurrentLeaderboardDate = "Leaderboards" +
+                        calendar.get(Calendar.YEAR) +
+                        calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH) +
+                        calendar.get(Calendar.DAY_OF_MONTH);//Final String should look like Leaderboards2021Oct200
+            } else {
+                mCurrentLeaderboardDate = "Leaderboards" +
+                        calendar.get(Calendar.YEAR) +
+                        monthForMonthlyRaffles;//Final String should look like Leaderboards2021Oct
+            }
+
             mCurrentLeaderboardRef++;
             if (mCurrentLeaderboardRef > mLeaderBoardReferences.size() - 1) {
                 mCurrentLeaderboardRef = 0;
@@ -120,18 +148,18 @@ public class LeaderboardActivity extends AppCompatActivity {
     }
 
     private void fillTitleList() {
-        mTitleList.add(getString(R.string._1_raffle));
         mTitleList.add(getString(R.string._5_raffle));
         mTitleList.add(getString(R.string._10_raffle));
         mTitleList.add(getString(R.string._20_raffle));
+        mTitleList.add(getString(R.string._25_raffle));
         mTitleList.add(getString(R.string._50_raffle));
     }
 
     private void fillLeaderboardReferencesList() {
-        mLeaderBoardReferences.add("1Raffle");
         mLeaderBoardReferences.add("5Raffle");
         mLeaderBoardReferences.add("10Raffle");
         mLeaderBoardReferences.add("20Raffle");
+        mLeaderBoardReferences.add("25Raffle");
         mLeaderBoardReferences.add("50Raffle");
     }
 
@@ -161,65 +189,72 @@ public class LeaderboardActivity extends AppCompatActivity {
         ValueEventListener submittedTicketsListener = new ValueEventListener() {// Read from the database whenever there's a change
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.child(mLeaderBoardReferences.get(mCurrentLeaderboardRef))
-                        .child(mCurrentLeaderboardDate)
-                        .child(mFirebaseUser.getUid())
-                        .child("submittedTickets")
-                        .getValue(Integer.class) != null) {
-                    //noinspection ConstantConditions
-                    mTicketsAlreadySubmitted = dataSnapshot.child(mLeaderBoardReferences.get(mCurrentLeaderboardRef))
+                if (!dataSnapshot.child(mLeaderBoardReferences.get(mCurrentLeaderboardRef)).child(mCurrentLeaderboardDate).hasChild("isInvalid")) {
+                    if (dataSnapshot.child(mLeaderBoardReferences.get(mCurrentLeaderboardRef))
                             .child(mCurrentLeaderboardDate)
                             .child(mFirebaseUser.getUid())
                             .child("submittedTickets")
-                            .getValue(Integer.class);//Objects.requireNonNull() did not work
-                }
-                Query query = dataSnapshot
-                        .child(mLeaderBoardReferences.get(mCurrentLeaderboardRef))
-                        .child(mCurrentLeaderboardDate)
-                        .getRef()
-                        .orderByChild("submittedTickets");
-                Task<DataSnapshot> usersSnapshot = query.get();
-                //noinspection StatementWithEmptyBody
-                while (!usersSnapshot.isComplete()) { }//wait for the query to finish to get back to us
-                DataSnapshot result = usersSnapshot.getResult();
-                HashMap<?,?> hashMapOfUIDs = (HashMap<?,?>) (result != null ? result.getValue() : null);
-                mUserDataArrayList.clear();
-                if (hashMapOfUIDs != null) {//only null if no one submitted tickets yet for the current month
-                    Collection<?> values = hashMapOfUIDs.values();
-                    for (Object o : values) {
-                        HashMap<?,?> hashMap = (HashMap<?,?>) o;
-                        Collection<?> usernameAndTickets = hashMap.values();
-                        Iterator<?> iterator = usernameAndTickets.iterator();
-                        while (iterator.hasNext()) {
-                            String displayName = "";
-                            Long value = 0L;
-                            if (iterator.hasNext()) {
-                                Object object = iterator.next();
-                                if (object instanceof String) {
-                                    displayName = object.toString();
-                                } else if (object instanceof Long) {
-                                    value = (Long) object;
-                                }
-                            }
-                            if (iterator.hasNext()) {
-                                Object object = iterator.next();
-                                if (object instanceof String) {
-                                    displayName = object.toString();
-                                } else if (object instanceof Long) {
-                                    value = (Long) object;
-                                }
-                            }
-                            Log.d(TAG, "Username: " + displayName + "Score: " + value);
-                            mUserDataArrayList.add(new UserData(displayName, value.intValue()));
-                        }
+                            .getValue(Integer.class) != null) {
+                        //noinspection ConstantConditions
+                        mTicketsAlreadySubmitted = dataSnapshot.child(mLeaderBoardReferences.get(mCurrentLeaderboardRef))
+                                .child(mCurrentLeaderboardDate)
+                                .child(mFirebaseUser.getUid())
+                                .child("submittedTickets")
+                                .getValue(Integer.class);//Objects.requireNonNull() did not work
                     }
-                    rankListOfUsers();
+                    Query query = dataSnapshot
+                            .child(mLeaderBoardReferences.get(mCurrentLeaderboardRef))
+                            .child(mCurrentLeaderboardDate)
+                            .getRef()
+                            .orderByChild("submittedTickets");
+                    Task<DataSnapshot> usersSnapshot = query.get();
+                    //noinspection StatementWithEmptyBody
+                    while (!usersSnapshot.isComplete()) {
+                    }//wait for the query to finish to get back to us
+                    DataSnapshot result = usersSnapshot.getResult();
+                    HashMap<?, ?> hashMapOfUIDs = (HashMap<?, ?>) (result != null ? result.getValue() : null);
+                    mUserDataArrayList.clear();
+                    if (hashMapOfUIDs != null) {//only null if no one submitted tickets yet for the current month
+                        Collection<?> values = hashMapOfUIDs.values();
+                        for (Object o : values) {
+                            HashMap<?, ?> hashMap = (HashMap<?, ?>) o;
+                            Collection<?> usernameAndTickets = hashMap.values();
+                            Iterator<?> iterator = usernameAndTickets.iterator();
+                            while (iterator.hasNext()) {
+                                String displayName = "";
+                                Long value = 0L;
+                                if (iterator.hasNext()) {
+                                    Object object = iterator.next();
+                                    if (object instanceof String) {
+                                        displayName = object.toString();
+                                    } else if (object instanceof Long) {
+                                        value = (Long) object;
+                                    }
+                                }
+                                if (iterator.hasNext()) {
+                                    Object object = iterator.next();
+                                    if (object instanceof String) {
+                                        displayName = object.toString();
+                                    } else if (object instanceof Long) {
+                                        value = (Long) object;
+                                    }
+                                }
+                                mUserDataArrayList.add(new UserData(displayName, value.intValue()));
+                            }
+                        }
+                        rankListOfUsers();
+                    }
+                    mLeaderboardRecyclerView.setAdapter(new LeaderboardAdapter(mUserDataArrayList, getApplicationContext()));
+                    mLeaderboardCurrentUser = findViewById(R.id.leaderboardCurrentUser);
+                    String currentUser = "You: " + mFirebaseUser.getDisplayName();
+                    mLeaderboardCurrentUser.setText(currentUser);
+                    mLeaderboardCurrentUserTickets.setText(String.valueOf(mTicketsAlreadySubmitted));
+                } else {
+                    if (mUserDataArrayList.isEmpty()) {
+                        mUserDataArrayList.add(new UserData("Not Valid Raffle", 0));
+                        mLeaderboardRecyclerView.setAdapter(new LeaderboardAdapter(mUserDataArrayList, getApplicationContext()));
+                    }
                 }
-                mLeaderboardRecyclerView.setAdapter(new LeaderboardAdapter(mUserDataArrayList, getApplicationContext()));
-                mLeaderboardCurrentUser = findViewById(R.id.leaderboardCurrentUser);
-                String currentUser = "You: " + mFirebaseUser.getDisplayName();
-                mLeaderboardCurrentUser.setText(currentUser);
-                mLeaderboardCurrentUserTickets.setText(String.valueOf(mTicketsAlreadySubmitted));
             }
 
             @Override

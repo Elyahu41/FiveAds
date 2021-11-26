@@ -1,5 +1,8 @@
 package com.ej.fiveads.activities.ui.spend;
 
+import static com.ej.fiveads.classes.RaffleData.MONTHLY;
+import static com.ej.fiveads.classes.RaffleData.WEEKLY;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -48,7 +51,9 @@ public class SpendFragment extends Fragment {
             adLoader = new AdLoader.Builder(mContext, "ca-app-pub-3199244267160640/8510550495")//for development ca-app-pub-3940256099942544/2247696110
                     .forNativeAd(nativeAd -> {// Show the ad.
                         mNativeAdArrayList.add(nativeAd);
-                        mRecyclerView.setAdapter(new RaffleAdapter(mContext, getListOfRafflesWithAds()));
+                        if (mNativeAdArrayList.size() >= 5) {
+                            mRecyclerView.setAdapter(new RaffleAdapter(mContext, getListOfRafflesWithAds()));
+                        }
                     })
                     .withAdListener(new AdListener() {
                         @Override
@@ -87,27 +92,27 @@ public class SpendFragment extends Fragment {
 
     private List<Object> getListOfRafflesWithAds() {
         List<Object> mRaffleList = new ArrayList<>();
-        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_1), R.drawable.amazongc, "1Raffle"));
+        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_5), R.drawable.amazongc, "5Raffle", WEEKLY));
         if (mNativeAdArrayList.size() >= 1) {
             mRaffleList.add(mNativeAdArrayList.get(0));
         }
-        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_5), R.drawable.amazongc, "5Raffle"));
+        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_10), R.drawable.amazongc, "10Raffle", MONTHLY));
         if (mNativeAdArrayList.size() >= 2) {
             mRaffleList.add(mNativeAdArrayList.get(1));
         }
-        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_10), R.drawable.amazongc, "10Raffle"));
+        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_20), R.drawable.amazongc, "20Raffle", MONTHLY));
         if (mNativeAdArrayList.size() >= 3) {
             mRaffleList.add(mNativeAdArrayList.get(2));
         }
-        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_20), R.drawable.amazongc, "20Raffle"));
+        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_25), R.drawable.amazongc, "25Raffle", MONTHLY));
         if (mNativeAdArrayList.size() >= 4) {
             mRaffleList.add(mNativeAdArrayList.get(3));
         }
-        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_50), R.drawable.amazongc, "50Raffle"));
+        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_50), R.drawable.amazongc, "50Raffle", MONTHLY));
         if (mNativeAdArrayList.size() >= 5) {
             mRaffleList.add(mNativeAdArrayList.get(4));
         }
-        mRaffleList.add(new RaffleData("More \nComing Soon!", R.drawable.coming_soon, "$"));//$ isn't a valid database character
+        mRaffleList.add(new RaffleData("More \nComing Soon!", R.drawable.coming_soon, "$", MONTHLY));//$ isn't a valid database character
         return mRaffleList;
     }
 }

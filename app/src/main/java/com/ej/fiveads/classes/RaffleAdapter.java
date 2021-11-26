@@ -44,8 +44,12 @@ public class RaffleAdapter extends RecyclerView.Adapter<RaffleAdapter.RaffleView
     public void onBindViewHolder(@NonNull RaffleViewHolder holder, int position) {
         holder.setIsRecyclable(false);
         if (mRaffleAndAdList.get(position) instanceof RaffleData) {
-            if (holder.mAdTitle.getText().toString().isEmpty()) {
-                holder.mAdTitle.setVisibility(View.GONE);
+            if (((RaffleData) mRaffleAndAdList.get(position)).getRaffleType() == RaffleData.WEEKLY) {
+                holder.mAdTitle.setText(R.string.weekly);
+                holder.mAdTitle.setBackgroundColor(mContext.getResources().getColor(R.color.red, mContext.getTheme()));
+            } else if (((RaffleData) mRaffleAndAdList.get(position)).getRaffleType() == RaffleData.MONTHLY) {
+                holder.mAdTitle.setText(R.string.monthly);
+                holder.mAdTitle.setBackgroundColor(mContext.getResources().getColor(R.color.yellow, mContext.getTheme()));
             }
             holder.mImage.setImageResource(((RaffleData) mRaffleAndAdList.get(position)).getRaffleImage());
             holder.mTitle.setText(((RaffleData) mRaffleAndAdList.get(position)).getRaffleName());
@@ -55,6 +59,7 @@ public class RaffleAdapter extends RecyclerView.Adapter<RaffleAdapter.RaffleView
                     mIntent.putExtra("Title", ((RaffleData) mRaffleAndAdList.get(position)).getRaffleName());
                     mIntent.putExtra("Image", ((RaffleData) mRaffleAndAdList.get(position)).getRaffleImage());
                     mIntent.putExtra("DatabaseRef", ((RaffleData) mRaffleAndAdList.get(position)).getDatabaseRef());
+                    mIntent.putExtra("RaffleType", ((RaffleData) mRaffleAndAdList.get(position)).getRaffleType());
                     mContext.startActivity(mIntent);
                 });
             }
@@ -63,7 +68,6 @@ public class RaffleAdapter extends RecyclerView.Adapter<RaffleAdapter.RaffleView
             populateNativeAdView((NativeAd) mRaffleAndAdList.get(position), adView);
             holder.mFrameLayout.addView(adView);
             holder.mCardView.setVisibility(View.GONE);
-
         }
     }
 

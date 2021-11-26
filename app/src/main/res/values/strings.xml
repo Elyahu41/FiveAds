@@ -27,12 +27,14 @@
     <string name="_5_raffle">$5 Raffle</string>
     <string name="_10_raffle">$10 Raffle</string>
     <string name="_20_raffle">$20 Raffle</string>
+    <string name="_25_raffle">$25 Raffle</string>
     <string name="_50_raffle">$50 Raffle</string>
     <string name="twenty_raffle">Twenty Raffle</string>
     <string name="win_1">Win $1!</string>
     <string name="win_5">Win $5!</string>
     <string name="win_10">Win $10!</string>
     <string name="win_20">Win $20!</string>
+    <string name="win_25">Win $25!</string>
     <string name="win_50">Win $50!</string>
     <string name="leaderboards">LeaderBoards</string>
     <string name="submit">Submit</string>
@@ -46,4 +48,7 @@
     <string name="you">You:</string>
     <string name="ad_icon">ad icon</string>
     <string name="raffle">raffle</string>
+    <string name="weekly">Weekly!</string>
+    <string name="monthly">Monthly!</string>
+
 </resources>
