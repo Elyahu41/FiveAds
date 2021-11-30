@@ -58,10 +58,10 @@ dependencies {
     implementation 'com.adcolony:sdk:4.6.5'
     implementation 'com.applovin:applovin-sdk:10.3.5'
 
+    implementation 'com.google.ads.mediation:tapjoy:12.7.1.0'//do not touch
     implementation 'com.chartboost:chartboost-sdk:8.2.1'
     implementation 'com.google.ads.mediation:adcolony:4.6.5.0'
     implementation 'com.google.ads.mediation:applovin:10.3.4.0'
-    implementation 'com.google.ads.mediation:tapjoy:12.7.1.0' //do not touch
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

@@ -55,6 +55,8 @@ public class RaffleSubmitActivity extends AppCompatActivity {
     private CountDownTimer timer;
     private int raffleType;
     private boolean isNotValidRaffle = false;
+    private boolean mIsTimeCorrect;
+    private DatabaseReference mOffsetRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +65,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).hide();
         Calendar calendar = Calendar.getInstance();
         mSharedPreferences = getSharedPreferences(mDeviceDefaults, MODE_PRIVATE);
+        mOffsetRef = FirebaseDatabase.getInstance().getReference(".info/serverTimeOffset");
 
         TextView title = findViewById(R.id.titleTextView);
         ImageView imageView = findViewById(R.id.submitImage);
@@ -145,47 +148,57 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                         .create()
                         .show();
             } else {
-                if (!editText.getText().toString().isEmpty()) {
-                    mUserSelectedTicketsToSubmit = Integer.parseInt(editText.getText().toString());
-                }
-                if (mUserSelectedTicketsToSubmit == 0) {
-                    Toast.makeText(this, R.string.you_cant_submit_nothing, Toast.LENGTH_SHORT).show();
-                } else if (mUserSelectedTicketsToSubmit > mNumberOfUsableTickets) {
-                    Toast.makeText(this, R.string.You_do_not_have_that_many_tickets, Toast.LENGTH_SHORT).show();
-                } else {
-                    if (mBundle != null) {
-                        mLeaderboardsDatabase.child(mBundle.getString("DatabaseRef").trim())
-                                .child(mCurrentLeaderboardDate)
-                                .child(mFirebaseUser.getUid())
-                                .child("displayName")
-                                .setValue(mFirebaseUser.getDisplayName());
-                        mLeaderboardsDatabase.child(mBundle.getString("DatabaseRef"))
-                                .child(mCurrentLeaderboardDate)
-                                .child(mFirebaseUser.getUid())
-                                .child("submittedTickets").setValue(
-                                mUserSelectedTicketsToSubmit + mTicketsAlreadySubmitted
-                        );
-                    }
-                    mTicketsDatabase.child(mFirebaseUser.getUid())
-                            .child("usableTickets")
-                            .setValue(
-                                    mNumberOfUsableTickets - mUserSelectedTicketsToSubmit
-                            );
-                    String updatedUsableTickets = String.format(Locale.ENGLISH, "%,d", mNumberOfUsableTickets - mUserSelectedTicketsToSubmit);
-                    String usableTickets = "Usable tickets: " + updatedUsableTickets;
-                    mTicketsTV.setText(usableTickets);
-                    String message;
-                    if (mUserSelectedTicketsToSubmit == 1) {
-                        message = "You have submitted " + mUserSelectedTicketsToSubmit + " ticket!";
-                    } else {
-                        message = "You have submitted " + mUserSelectedTicketsToSubmit + " tickets!";
-                    }
+                if (!mIsTimeCorrect) {
                     new AlertDialog.Builder(this)
-                            .setTitle("Tickets Submitted!")
-                            .setMessage(message)
+                            .setTitle("Your system time is incorrect!")
+                            .setMessage("Your system time is off by more than a day! This will cause your tickets to go to the wrong raffle! " +
+                                    "Please fix your time before submitting your tickets!")
                             .setPositiveButton("Ok", (dialog, which) -> launchPlayStoreReview())
                             .create()
                             .show();
+                } else {
+                    if (!editText.getText().toString().isEmpty()) {
+                        mUserSelectedTicketsToSubmit = Integer.parseInt(editText.getText().toString());
+                    }
+                    if (mUserSelectedTicketsToSubmit == 0) {
+                        Toast.makeText(this, R.string.you_cant_submit_nothing, Toast.LENGTH_SHORT).show();
+                    } else if (mUserSelectedTicketsToSubmit > mNumberOfUsableTickets) {
+                        Toast.makeText(this, R.string.You_do_not_have_that_many_tickets, Toast.LENGTH_SHORT).show();
+                    } else {
+                        if (mBundle != null) {
+                            mLeaderboardsDatabase.child(mBundle.getString("DatabaseRef").trim())
+                                    .child(mCurrentLeaderboardDate)
+                                    .child(mFirebaseUser.getUid())
+                                    .child("displayName")
+                                    .setValue(mFirebaseUser.getDisplayName());
+                            mLeaderboardsDatabase.child(mBundle.getString("DatabaseRef"))
+                                    .child(mCurrentLeaderboardDate)
+                                    .child(mFirebaseUser.getUid())
+                                    .child("submittedTickets").setValue(
+                                    mUserSelectedTicketsToSubmit + mTicketsAlreadySubmitted
+                            );
+                        }
+                        mTicketsDatabase.child(mFirebaseUser.getUid())
+                                .child("usableTickets")
+                                .setValue(
+                                        mNumberOfUsableTickets - mUserSelectedTicketsToSubmit
+                                );
+                        String updatedUsableTickets = String.format(Locale.ENGLISH, "%,d", mNumberOfUsableTickets - mUserSelectedTicketsToSubmit);
+                        String usableTickets = "Usable tickets: " + updatedUsableTickets;
+                        mTicketsTV.setText(usableTickets);
+                        String message;
+                        if (mUserSelectedTicketsToSubmit == 1) {
+                            message = "You have submitted " + mUserSelectedTicketsToSubmit + " ticket!";
+                        } else {
+                            message = "You have submitted " + mUserSelectedTicketsToSubmit + " tickets!";
+                        }
+                        new AlertDialog.Builder(this)
+                                .setTitle("Tickets Submitted!")
+                                .setMessage(message)
+                                .setPositiveButton("Ok", (dialog, which) -> launchPlayStoreReview())
+                                .create()
+                                .show();
+                    }
                 }
             }
         });
@@ -193,7 +206,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
     }
 
     private void startCountdownTimer() {
-        TextView timer = findViewById(R.id.remainingTimeTextView);
+        TextView timerView = findViewById(R.id.remainingTimeTextView);
         Calendar calendar = Calendar.getInstance();
         Calendar calendar2 = (Calendar) calendar.clone();
         if (raffleType == WEEKLY) {
@@ -203,7 +216,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
             calendar.set(Calendar.HOUR_OF_DAY, 0);
             calendar.set(Calendar.MINUTE, 0);
             calendar.set(Calendar.SECOND, 0);
-            this.timer = new CountDownTimer(calendar.getTimeInMillis() - calendar2.getTimeInMillis(),1000) {
+            timer = new CountDownTimer(calendar.getTimeInMillis() - calendar2.getTimeInMillis(),1000) {
                 @Override
                 public void onTick(long millisUntilFinished) {
                     long days = TimeUnit.MILLISECONDS.toDays(millisUntilFinished);
@@ -222,7 +235,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                     }
                     String str = days + "d " + timeTillEndOfTheWeek;
                     String finalString = "Raffle ends in " + str;
-                    timer.setText(finalString);
+                    timerView.setText(finalString);
                 }
                 @Override
                 public void onFinish() {
@@ -236,7 +249,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
             calendar.set(Calendar.HOUR_OF_DAY, 0);
             calendar.set(Calendar.MINUTE, 0);
             calendar.set(Calendar.SECOND, 0);
-            this.timer = new CountDownTimer(calendar.getTimeInMillis() - calendar2.getTimeInMillis(),1000) {
+            timer = new CountDownTimer(calendar.getTimeInMillis() - calendar2.getTimeInMillis(),1000) {
                 @Override
                 public void onTick(long millisUntilFinished) {
                     long days = TimeUnit.MILLISECONDS.toDays(millisUntilFinished);
@@ -255,7 +268,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                     }
                     String str = days + "d " + timeTillEndOfTheMonth;
                     String finalString = "Raffle ends in " + str;
-                    timer.setText(finalString);
+                    timerView.setText(finalString);
                 }
                 @Override
                 public void onFinish() {
@@ -269,8 +282,37 @@ public class RaffleSubmitActivity extends AppCompatActivity {
     protected void onPause() {
         if (timer != null) {
             timer.cancel();
+            timer = null;
         }
         super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        checkTimeWithFirebase();
+        if (timer == null) {
+            startCountdownTimer();
+        }
+        super.onResume();
+    }
+
+    private void checkTimeWithFirebase() {
+        mOffsetRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.getValue(Long.class) != null) {
+                    //noinspection ConstantConditions
+                    long offset = snapshot.getValue(Long.class);
+                    mIsTimeCorrect = offset <= 86_400_000 && offset >= -86_400_000;
+                    Log.d(TAG, "offset is: " + offset);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.d(TAG, "error is " + error.toString());
+            }
+        });
     }
 
     private void launchPlayStoreReview() {
@@ -344,5 +386,6 @@ public class RaffleSubmitActivity extends AppCompatActivity {
             }
         };
         mTicketsDatabase.addValueEventListener(ticketListener);//for users and tickets earned
+        checkTimeWithFirebase();
     }
 }
