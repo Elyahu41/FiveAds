@@ -16,10 +16,10 @@
         app:drawableStartCompat="@drawable/tickets"
         app:layout_constraintBottom_toTopOf="@+id/watchAd"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.389"
+        app:layout_constraintHorizontal_bias="0.399"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.503" />
+        app:layout_constraintVertical_bias="0.509" />
 
     <TextView
         android:id="@+id/ticketAmount"
@@ -66,9 +66,10 @@
         android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/watchAd"
-        app:layout_constraintHorizontal_bias="0.149"
-        app:layout_constraintStart_toStartOf="@+id/watchAd" />
+        app:layout_constraintEnd_toEndOf="@+id/ticketAmount"
+        app:layout_constraintHorizontal_bias="0.396"
+        app:layout_constraintStart_toStartOf="@+id/textView"
+        app:layout_constraintTop_toBottomOf="@+id/countdown" />
 
     <TextView
         android:id="@+id/amountOfEnergyRemaining"
@@ -89,7 +90,7 @@
     <!--TODO for actual use "ca-app-pub-3199244267160640/8318978808" -->
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"

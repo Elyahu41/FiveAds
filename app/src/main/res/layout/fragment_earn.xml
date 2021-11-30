@@ -61,19 +61,19 @@
         android:id="@+id/textView2"
         android:layout_width="52dp"
         android:layout_height="52dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="80dp"
         android:background="@color/purple"
         android:contentDescription="@string/energy"
         android:padding="2dp"
         android:src="@drawable/icons8_energy_47"
         android:textSize="30sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/watchAd"
-        app:layout_constraintHorizontal_bias="0.121"
-        app:layout_constraintStart_toStartOf="@+id/watchAd"
-        app:layout_constraintTop_toBottomOf="@+id/watchAd"
-        app:layout_constraintVertical_bias="0.483" />
+        app:layout_constraintBottom_toTopOf="@+id/adView"
+        app:layout_constraintEnd_toEndOf="@+id/ticketAmount"
+        app:layout_constraintHorizontal_bias="0.384"
+        app:layout_constraintStart_toStartOf="@+id/textView"
+        app:layout_constraintTop_toBottomOf="@+id/countdown"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/amountOfEnergyRemaining"
