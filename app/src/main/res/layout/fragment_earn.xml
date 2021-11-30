@@ -70,7 +70,7 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/adView"
         app:layout_constraintEnd_toEndOf="@+id/ticketAmount"
-        app:layout_constraintHorizontal_bias="0.384"
+        app:layout_constraintHorizontal_bias="0.388"
         app:layout_constraintStart_toStartOf="@+id/textView"
         app:layout_constraintTop_toBottomOf="@+id/countdown"
         app:layout_constraintVertical_bias="0.0" />
@@ -89,6 +89,7 @@
         app:layout_constraintStart_toEndOf="@+id/textView2"
         app:layout_constraintTop_toTopOf="@+id/textView2"
         app:layout_constraintVertical_bias="0.474" />
+
     <!-- for development "ca-app-pub-3940256099942544/6300978111" -->
     <!--TODO for actual use "ca-app-pub-3199244267160640/8318978808" -->
     <com.google.android.gms.ads.AdView
