@@ -120,7 +120,7 @@ public class EarnFragment extends Fragment {
             mWatchAdButton.setText(R.string.ad_loading);
         }
 
-        mWatchAdButton.setOnClickListener(v -> {//TODO configure autoplay all 5 ads //performClick method
+        mWatchAdButton.setOnClickListener(v -> {//TODO configure autoplay all 5 ads #performClick method
             if (mRewardedAd != null) {
                 mRewardedAd.show(requireActivity(), rewardItem -> {// Handle the reward.
                     recreateTimer(rewardItem);
@@ -143,6 +143,9 @@ public class EarnFragment extends Fragment {
                     initializeAds();
                 });
             } else {
+                mWatchAdButton.setEnabled(false);
+                mWatchAdButton.setText(R.string.ad_loading);
+                initializeAds();
                 Toast.makeText(requireContext(), "Ad not ready", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "The rewarded ad wasn't ready yet.");
             }

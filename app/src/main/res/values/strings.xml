@@ -50,5 +50,7 @@
     <string name="raffle">raffle</string>
     <string name="weekly">Weekly!</string>
     <string name="monthly">Monthly!</string>
+    <string name="chartboost_appid">6199c0e8e548a3078d23e7c6</string>
+    <string name="chartboost_app_signature">681ed7736bbfbc41de86c79da19d757fd66bdcf1</string>
 
 </resources>

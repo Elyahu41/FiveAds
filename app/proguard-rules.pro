@@ -32,3 +32,5 @@
 -keepclassmembers class com.ej.models.** {
    *;
 }
+
+-keep class com.chartboost.** { *; }
