@@ -189,7 +189,7 @@ public class LeaderboardActivity extends AppCompatActivity {
         ValueEventListener submittedTicketsListener = new ValueEventListener() {// Read from the database whenever there's a change
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (!dataSnapshot.child(mLeaderBoardReferences.get(mCurrentLeaderboardRef)).child(mCurrentLeaderboardDate).hasChild("isInvalid")) {
+                if (!dataSnapshot.child(mLeaderBoardReferences.get(mCurrentLeaderboardRef)).child(mCurrentLeaderboardDate).hasChild("isInValid")) {
                     if (dataSnapshot.child(mLeaderBoardReferences.get(mCurrentLeaderboardRef))
                             .child(mCurrentLeaderboardDate)
                             .child(mFirebaseUser.getUid())

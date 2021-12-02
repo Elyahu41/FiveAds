@@ -1,10 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".activities.ui.earn.EarnFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="130dp"
+        android:padding="8dp">
 
     <TextView
         android:id="@+id/textView"
@@ -13,13 +27,8 @@
         android:background="@color/gold"
         android:backgroundTint="@color/black"
         android:backgroundTintMode="screen"
-        app:drawableStartCompat="@drawable/tickets"
-        app:layout_constraintBottom_toTopOf="@+id/watchAd"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.251"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.52" />
+        android:layout_gravity="center"
+        app:drawableStartCompat="@drawable/tickets" />
 
     <TextView
         android:id="@+id/ticketAmount"
@@ -28,52 +37,44 @@
         android:background="@drawable/border"
         android:gravity="center"
         android:textSize="40sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/textView"
-        app:layout_constraintStart_toEndOf="@+id/textView"
-        app:layout_constraintTop_toTopOf="@+id/textView"
-        app:layout_constraintVertical_bias="0.0" />
+        android:textStyle="bold" />
 
+</LinearLayout>
     <Button
         android:id="@+id/watchAd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/get_tickets"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/ticketAmount"
-        app:layout_constraintHorizontal_bias="0.491"
-        app:layout_constraintStart_toStartOf="@+id/textView"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.61" />
+        android:padding="8dp"
+        android:layout_marginTop="80dp"
+        android:layout_gravity="center"/>
 
-    <TextView
-        android:id="@+id/countdown"
+        <TextView
+            android:id="@+id/countdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="8dp"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="@+id/watchAd"
-        app:layout_constraintStart_toStartOf="@+id/watchAd"
-        app:layout_constraintTop_toBottomOf="@+id/watchAd" />
+        android:layout_gravity="center"
+        android:layout_marginTop="60dp">
 
     <ImageView
-        android:id="@+id/textView2"
         android:layout_width="52dp"
         android:layout_height="52dp"
-        android:layout_marginTop="80dp"
         android:background="@color/purple"
         android:contentDescription="@string/energy"
+        android:layout_gravity="center"
         android:padding="2dp"
         android:src="@drawable/icons8_energy_47"
         android:textSize="30sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/adView"
-        app:layout_constraintEnd_toEndOf="@+id/ticketAmount"
-        app:layout_constraintHorizontal_bias="0.388"
-        app:layout_constraintStart_toStartOf="@+id/textView"
-        app:layout_constraintTop_toBottomOf="@+id/countdown"
-        app:layout_constraintVertical_bias="0.0" />
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/amountOfEnergyRemaining"
@@ -82,13 +83,9 @@
         android:background="@drawable/border"
         android:gravity="center"
         android:textSize="30sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/textView2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/textView2"
-        app:layout_constraintTop_toTopOf="@+id/textView2"
-        app:layout_constraintVertical_bias="0.474" />
+        android:textStyle="bold" />
+    </LinearLayout>
+    </LinearLayout>
 
     <!-- for development "ca-app-pub-3940256099942544/6300978111" -->
     <!--TODO for actual use "ca-app-pub-3199244267160640/8318978808" -->
@@ -97,11 +94,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
+        android:layout_gravity="bottom|center"
+        android:layout_marginTop="20dp"
         app:adSize="BANNER"
-        app:adUnitId="ca-app-pub-3199244267160640/8318978808"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:adUnitId="ca-app-pub-3199244267160640/8318978808" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

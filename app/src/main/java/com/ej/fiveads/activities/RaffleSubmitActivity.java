@@ -98,13 +98,13 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                         calendar.get(Calendar.YEAR) +
                         calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH);//Final String should look like Leaderboards2021Oct
             } else {
-                while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
+                while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
                     calendar.add(Calendar.DATE, 1);
                 }
                 mCurrentLeaderboardDate = "Leaderboards" +
                         calendar.get(Calendar.YEAR) +
                         calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH) +
-                        calendar.get(Calendar.DAY_OF_MONTH);//Final String should look like Leaderboards2021Oct200
+                        calendar.get(Calendar.DAY_OF_MONTH);//Final String should look like Leaderboards2021Oct20
             }
             initializeDatabaseListeners();//to see the value of total and usable tickets
         }
