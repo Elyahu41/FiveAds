@@ -13,41 +13,42 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="130dp"
-        android:padding="8dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="130dp"
+            android:padding="8dp">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@color/gold"
-        android:backgroundTint="@color/black"
-        android:backgroundTintMode="screen"
-        android:layout_gravity="center"
-        app:drawableStartCompat="@drawable/tickets" />
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/gold"
+                android:backgroundTint="@color/black"
+                android:backgroundTintMode="screen"
+                android:layout_gravity="center"
+                app:drawableStartCompat="@drawable/tickets" />
 
-    <TextView
-        android:id="@+id/ticketAmount"
-        android:layout_width="144dp"
-        android:layout_height="129dp"
-        android:background="@drawable/border"
-        android:gravity="center"
-        android:textSize="40sp"
-        android:textStyle="bold" />
+            <TextView
+                android:id="@+id/ticketAmount"
+                android:layout_width="144dp"
+                android:layout_height="129dp"
+                android:background="@drawable/border"
+                android:gravity="center"
+                android:textSize="40sp"
+                android:textStyle="bold" />
 
-</LinearLayout>
-    <Button
-        android:id="@+id/watchAd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/get_tickets"
-        android:padding="8dp"
-        android:layout_marginTop="80dp"
-        android:layout_gravity="center"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/watchAd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/get_tickets"
+            android:padding="8dp"
+            android:layout_marginTop="80dp"
+            android:layout_gravity="center"/>
 
         <TextView
             android:id="@+id/countdown"
@@ -59,32 +60,32 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="60dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="18dp">
 
-    <ImageView
-        android:layout_width="52dp"
-        android:layout_height="52dp"
-        android:background="@color/purple"
-        android:contentDescription="@string/energy"
-        android:layout_gravity="center"
-        android:padding="2dp"
-        android:src="@drawable/icons8_energy_47"
-        android:textSize="30sp"
-        android:textStyle="bold" />
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@color/purple"
+                android:contentDescription="@string/energy"
+                android:layout_gravity="center"
+                android:padding="2dp"
+                android:src="@drawable/icons8_energy_47"
+                android:textSize="30sp"
+                android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/amountOfEnergyRemaining"
-        android:layout_width="52dp"
-        android:layout_height="52dp"
-        android:background="@drawable/border"
-        android:gravity="center"
-        android:textSize="30sp"
-        android:textStyle="bold" />
-    </LinearLayout>
+            <TextView
+                android:id="@+id/amountOfEnergyRemaining"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/border"
+                android:gravity="center"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- for development "ca-app-pub-3940256099942544/6300978111" -->

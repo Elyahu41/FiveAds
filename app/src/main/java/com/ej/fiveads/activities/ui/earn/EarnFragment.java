@@ -8,6 +8,7 @@ import static com.ej.fiveads.activities.MainActivity.mDeviceDefaults;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -87,10 +88,12 @@ public class EarnFragment extends Fragment {
     private boolean isAddingTickets = false;
     private CountDownTimer mCountDownTimer;
     private AdView mAdView;
+    private Context mContext;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         //EarnViewModel earnViewModel = new ViewModelProvider(this).get(EarnViewModel.class);
         binding = FragmentEarnBinding.inflate(inflater, container, false);
+        mContext = getContext();
         initializeAds();
 
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -146,7 +149,7 @@ public class EarnFragment extends Fragment {
                 mWatchAdButton.setEnabled(false);
                 mWatchAdButton.setText(R.string.ad_loading);
                 initializeAds();
-                Toast.makeText(requireContext(), "Ad not ready", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, "Ad not ready", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "The rewarded ad wasn't ready yet.");
             }
         });
@@ -165,7 +168,7 @@ public class EarnFragment extends Fragment {
             @Override
             public void onTick(long millisUntilFinished) {
                 isAddingTickets = true;
-                mTicketAmount.setTextColor(getResources().getColor(R.color.green, requireActivity().getTheme()));
+                mTicketAmount.setTextColor(mContext.getResources().getColor(R.color.green, mContext.getTheme()));
                 currentTickets += 1;
                 mTicketAmount.setText(String.format(Locale.getDefault(), "%,d", currentTickets));
             }
@@ -180,9 +183,9 @@ public class EarnFragment extends Fragment {
     }
 
     private void initializeAds() {
-        MobileAds.initialize(requireContext(), initializationStatus -> {
-                    RewardedAd.load(requireActivity(),
-                            getString(R.string.admob_main_ad_id),// replace with "ca-app-pub-3940256099942544/5224354917" for development
+        MobileAds.initialize(mContext, initializationStatus -> {
+                    RewardedAd.load(mContext,
+                            mContext.getString(R.string.admob_main_ad_id),// replace with "ca-app-pub-3940256099942544/5224354917" for development
                             new AdRequest.Builder().build(),
                             new RewardedAdLoadCallback() {
                                 @Override
@@ -404,9 +407,9 @@ public class EarnFragment extends Fragment {
             if (calendar.getTime().compareTo(new Date()) < 0) {
                 calendar.add(Calendar.DATE, 1);
             }
-            PendingIntent dailyPendingIntent = PendingIntent.getBroadcast(requireContext(), 0,
-                    new Intent(requireContext(), DailyNotifications.class), PendingIntent.FLAG_IMMUTABLE);
-            AlarmManager am = (AlarmManager) requireContext().getSystemService(ALARM_SERVICE);
+            PendingIntent dailyPendingIntent = PendingIntent.getBroadcast(mContext, 0,
+                    new Intent(mContext, DailyNotifications.class), PendingIntent.FLAG_IMMUTABLE);
+            AlarmManager am = (AlarmManager) mContext.getSystemService(ALARM_SERVICE);
             am.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 0, dailyPendingIntent);
             mSharedPreferences.edit().putBoolean("notificationsSet", true).apply();
         }
@@ -414,10 +417,10 @@ public class EarnFragment extends Fragment {
 
     private void alertUserToChangeDisplayName() {
         if (!mSharedPreferences.getBoolean("usernameSet", false)) {
-        final EditText edittext = new EditText(requireContext());
+        final EditText edittext = new EditText(mContext);
         edittext.setText(mFirebaseUser.getDisplayName());
         edittext.setGravity(Gravity.CENTER);
-        new AlertDialog.Builder(requireContext())
+        new AlertDialog.Builder(mContext)
                 .setTitle("Create a username!")
                 .setMessage("Enter a username others can see you by:")
                 .setView(edittext)
@@ -430,7 +433,7 @@ public class EarnFragment extends Fragment {
                     showIntroDialog();
                 })
                 .setNegativeButton("No thanks", (dialog, which) -> {
-                    Toast.makeText(requireContext(), "Change your username in the settings at any time!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(mContext, "Change your username in the settings at any time!", Toast.LENGTH_LONG).show();
                     showIntroDialog();
                 })
                 .create()
@@ -440,7 +443,7 @@ public class EarnFragment extends Fragment {
     }
 
     private void showIntroDialog() {
-        new AlertDialog.Builder(requireContext())
+        new AlertDialog.Builder(mContext)
                 .setTitle("Introduction")
                 .setMessage("Welcome to the 5 Ads app! The idea behind this app is extremely simple and there are only 2 steps involved.\n\n" +
                         "Step 1. Earn tickets by watching ads (Max 5 a day). Each ad watched gives you 5 tickets. These tickets can be used to " +
