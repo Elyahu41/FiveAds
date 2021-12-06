@@ -98,6 +98,9 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                         calendar.get(Calendar.YEAR) +
                         calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH);//Final String should look like Leaderboards2021Oct
             } else {
+                if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
+                    calendar.add(Calendar.DATE, 1);
+                }
                 while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
                     calendar.add(Calendar.DATE, 1);
                 }
@@ -210,12 +213,16 @@ public class RaffleSubmitActivity extends AppCompatActivity {
         Calendar calendar = Calendar.getInstance();
         Calendar calendar2 = (Calendar) calendar.clone();
         if (raffleType == WEEKLY) {
+            if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
+                calendar.add(Calendar.DATE, 1);
+            }
             while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
                 calendar.add(Calendar.DATE, 1);
             }
             calendar.set(Calendar.HOUR_OF_DAY, 0);
             calendar.set(Calendar.MINUTE, 0);
             calendar.set(Calendar.SECOND, 0);
+            Log.d(TAG, "Time till end of raffle: " + (calendar.getTimeInMillis() - calendar2.getTimeInMillis()));
             timer = new CountDownTimer(calendar.getTimeInMillis() - calendar2.getTimeInMillis(),1000) {
                 @Override
                 public void onTick(long millisUntilFinished) {
@@ -239,7 +246,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                 }
                 @Override
                 public void onFinish() {
-                    startActivity(getIntent());
+                    finish();
                 }
             }.start();
         }
@@ -272,7 +279,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                 }
                 @Override
                 public void onFinish() {
-                    startActivity(getIntent());
+                    finish();
                 }
             }.start();
         }

@@ -86,8 +86,8 @@ public class SpendFragment extends Fragment {
         for (NativeAd nativeAd:mNativeAdArrayList) {
             nativeAd.destroy();
         }
-        super.onDestroyView();
         binding = null;
+        super.onDestroyView();
     }
 
     private List<Object> getListOfRafflesWithAds() {

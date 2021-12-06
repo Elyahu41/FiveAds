@@ -72,6 +72,9 @@ public class LeaderboardActivity extends AppCompatActivity {
 
         if (mFirebaseUser != null) {
             mLeaderboardsDatabase = database.getReference("Leaderboards");
+            if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
+                calendar.add(Calendar.DATE, 1);
+            }
             while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
                 calendar.add(Calendar.DATE, 1);
             }
@@ -243,6 +246,9 @@ public class LeaderboardActivity extends AppCompatActivity {
                             }
                         }
                         rankListOfUsers();
+                    }
+                    if (mUserDataArrayList.isEmpty()) {
+                        mUserDataArrayList.add(new UserData("No Entries", 0));
                     }
                     mLeaderboardRecyclerView.setAdapter(new LeaderboardAdapter(mUserDataArrayList, getApplicationContext()));
                     mLeaderboardCurrentUser = findViewById(R.id.leaderboardCurrentUser);
