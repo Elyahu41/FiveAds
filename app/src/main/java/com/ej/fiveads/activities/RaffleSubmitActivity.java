@@ -195,6 +195,13 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                         } else {
                             message = "You have submitted " + mUserSelectedTicketsToSubmit + " tickets!";
                         }
+                        int updatedTickets = mUserSelectedTicketsToSubmit + mTicketsAlreadySubmitted;
+                        if (updatedTickets >= 0 && updatedTickets < 25) {
+                            mTicketsAlreadySubmittedTV.setTextColor(getColor(R.color.red));
+                            message += " Please note that you need a minimum of 25 tickets to participate in the raffle.";
+                        } else {
+                            mTicketsAlreadySubmittedTV.setTextColor(getColor(R.color.green));
+                        }
                         new AlertDialog.Builder(this)
                                 .setTitle("Tickets Submitted!")
                                 .setMessage(message)
@@ -358,6 +365,9 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                                 .child("submittedTickets")
                                 .getValue(Integer.class);//Objects.requireNonNull() did not work
                         mTicketsAlreadySubmittedTV.setText(String.format(Locale.getDefault(), "Tickets already submitted: %d", mTicketsAlreadySubmitted));
+                        if (mTicketsAlreadySubmitted > 0 && mTicketsAlreadySubmitted < 25) {
+                            mTicketsAlreadySubmittedTV.setTextColor(getColor(R.color.red));
+                        }
                     }
                 } else {
                     isNotValidRaffle = true;

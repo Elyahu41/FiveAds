@@ -182,7 +182,7 @@ public class EarnFragment extends Fragment {
         };
     }
 
-    private void initializeAds() {
+    private void initializeAds() {//TODO add resizable ads and ad on opening app
         MobileAds.initialize(mContext, initializationStatus -> {
                     RewardedAd.load(mContext,
                             mContext.getString(R.string.admob_main_ad_id),// replace with "ca-app-pub-3940256099942544/5224354917" for development
@@ -284,7 +284,7 @@ public class EarnFragment extends Fragment {
             startCountdownTimer();
         }
         if (!isAddingTickets) {
-            mTicketAmount.setText(String.valueOf(mNumberOfUsableTickets));
+            mTicketAmount.setText(String.format(Locale.getDefault(), "%,d", mNumberOfUsableTickets));
         }
         if (mAdView != null) {
             mAdView.resume();
@@ -339,9 +339,8 @@ public class EarnFragment extends Fragment {
                     //noinspection ConstantConditions
                     mNumberOfTotalTickets = dataSnapshot.child(mFirebaseUser.getUid()).child("totalTicketsEarned").getValue(Integer.class);
                 }
-                String numberOfUsableTickets = String.format(Locale.getDefault(),"%,d", mNumberOfUsableTickets);
                 if (!isAddingTickets) {
-                    mTicketAmount.setText(numberOfUsableTickets);
+                    mTicketAmount.setText(String.format(Locale.getDefault(), "%,d", mNumberOfUsableTickets));
                 }
                 Log.d(TAG, "Usable Tickets Value is: " + mNumberOfUsableTickets);
                 Log.d(TAG, "Total Tickets Earned Value is: " + mNumberOfTotalTickets);

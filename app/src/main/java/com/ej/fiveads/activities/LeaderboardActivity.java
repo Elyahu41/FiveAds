@@ -48,6 +48,7 @@ public class LeaderboardActivity extends AppCompatActivity {
     private TextView mLeaderboardCurrentUserTickets;
     private int mCurrentLeaderboardTitle;
     private String monthForMonthlyRaffles;
+    private String yearForMonthlyRaffles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +64,7 @@ public class LeaderboardActivity extends AppCompatActivity {
 
         Calendar calendar = Calendar.getInstance();
         monthForMonthlyRaffles = calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH);
+        yearForMonthlyRaffles = String.valueOf(calendar.get(Calendar.YEAR));
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
 
@@ -112,7 +114,7 @@ public class LeaderboardActivity extends AppCompatActivity {
                         calendar.get(Calendar.DAY_OF_MONTH);//Final String should look like Leaderboards2021Oct200
             } else {
                 mCurrentLeaderboardDate = "Leaderboards" +
-                        calendar.get(Calendar.YEAR) +
+                        yearForMonthlyRaffles +
                         monthForMonthlyRaffles;//Final String should look like Leaderboards2021Oct
             }
 
@@ -138,7 +140,7 @@ public class LeaderboardActivity extends AppCompatActivity {
                         calendar.get(Calendar.DAY_OF_MONTH);//Final String should look like Leaderboards2021Oct200
             } else {
                 mCurrentLeaderboardDate = "Leaderboards" +
-                        calendar.get(Calendar.YEAR) +
+                        yearForMonthlyRaffles +
                         monthForMonthlyRaffles;//Final String should look like Leaderboards2021Oct
             }
 
