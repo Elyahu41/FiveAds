@@ -96,19 +96,19 @@ public class SpendFragment extends Fragment {
         if (mNativeAdArrayList.size() >= 1) {
             mRaffleList.add(mNativeAdArrayList.get(0));
         }
-        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_10), R.drawable.amazongc, "10Raffle", MONTHLY));
+        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_5), R.drawable.amazongc, "5Raffle", MONTHLY));
         if (mNativeAdArrayList.size() >= 2) {
             mRaffleList.add(mNativeAdArrayList.get(1));
         }
-        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_20), R.drawable.amazongc, "20Raffle", MONTHLY));
+        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_10), R.drawable.amazongc, "10Raffle", MONTHLY));
         if (mNativeAdArrayList.size() >= 3) {
             mRaffleList.add(mNativeAdArrayList.get(2));
         }
-        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_25), R.drawable.amazongc, "25Raffle", MONTHLY));
+        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_15), R.drawable.amazongc, "15Raffle", MONTHLY));
         if (mNativeAdArrayList.size() >= 4) {
             mRaffleList.add(mNativeAdArrayList.get(3));
         }
-        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_50), R.drawable.amazongc, "50Raffle", MONTHLY));
+        mRaffleList.add(new RaffleData(mContext.getString(R.string.win_20), R.drawable.amazongc, "20Raffle", MONTHLY));
         if (mNativeAdArrayList.size() >= 5) {
             mRaffleList.add(mNativeAdArrayList.get(4));
         }

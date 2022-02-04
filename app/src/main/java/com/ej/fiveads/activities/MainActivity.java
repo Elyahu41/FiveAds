@@ -10,6 +10,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.ej.fiveads.R;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -19,9 +20,13 @@ public class MainActivity extends AppCompatActivity {
 
     public static String mDeviceDefaults = "DeviceDefaults";
     private FloatingActionButton mSettingFab;
+    private AppOpenManager appOpenManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {//TODO splash screen zoom in
+        appOpenManager = new AppOpenManager(getApplication());
+        MobileAds.initialize(this, initializationStatus -> appOpenManager.showAdIfAvailable());
+
         setTheme(R.style.AppTheme);//splash screen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);

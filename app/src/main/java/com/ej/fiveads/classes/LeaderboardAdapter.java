@@ -20,8 +20,8 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
     private final List<UserData> mUserList;
     private final Context mContext;
 
-    public LeaderboardAdapter(List<UserData> userList, Context mContext) {
-        mUserList = userList;
+    public LeaderboardAdapter(List<UserData> mUserList, Context mContext) {
+        this.mUserList = mUserList;
         this.mContext = mContext;
     }
 

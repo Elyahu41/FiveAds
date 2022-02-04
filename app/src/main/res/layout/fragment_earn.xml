@@ -24,8 +24,7 @@
                 android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@color/gold"
-                android:backgroundTint="@color/black"
+                android:background="@drawable/border"
                 android:backgroundTintMode="screen"
                 android:layout_gravity="center"
                 app:drawableStartCompat="@drawable/tickets" />

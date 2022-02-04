@@ -57,7 +57,7 @@ public class LeaderboardActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).hide();
 
         TextView leaderboardTitle = findViewById(R.id.leaderboardTitle);
-        leaderboardTitle.setText(getString(R.string._5_raffle));
+        leaderboardTitle.setText(getString(R.string._5_raffle_weekly));
 
         fillTitleList();
         fillLeaderboardReferencesList();
@@ -74,7 +74,7 @@ public class LeaderboardActivity extends AppCompatActivity {
 
         if (mFirebaseUser != null) {
             mLeaderboardsDatabase = database.getReference("Leaderboards");
-            if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
+            if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {// We always start with the weekly raffle
                 calendar.add(Calendar.DATE, 1);
             }
             while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
@@ -107,7 +107,7 @@ public class LeaderboardActivity extends AppCompatActivity {
             }
             leaderboardTitle.setText(mTitleList.get(mCurrentLeaderboardTitle));
 
-            if (mTitleList.get(mCurrentLeaderboardTitle).equals(getString(R.string._5_raffle))) {
+            if (mTitleList.get(mCurrentLeaderboardTitle).equals(getString(R.string._5_raffle_weekly))) {
                 mCurrentLeaderboardDate = "Leaderboards" +
                         calendar.get(Calendar.YEAR) +
                         calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH) +
@@ -133,7 +133,7 @@ public class LeaderboardActivity extends AppCompatActivity {
             }
             leaderboardTitle.setText(mTitleList.get(mCurrentLeaderboardTitle));
 
-            if (mTitleList.get(mCurrentLeaderboardTitle).equals(getString(R.string._5_raffle))) {
+            if (mTitleList.get(mCurrentLeaderboardTitle).equals(getString(R.string._5_raffle_weekly))) {
                 mCurrentLeaderboardDate = "Leaderboards" +
                         calendar.get(Calendar.YEAR) +
                         calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH) +
@@ -153,19 +153,19 @@ public class LeaderboardActivity extends AppCompatActivity {
     }
 
     private void fillTitleList() {
+        mTitleList.add(getString(R.string._5_raffle_weekly));
         mTitleList.add(getString(R.string._5_raffle));
         mTitleList.add(getString(R.string._10_raffle));
+        mTitleList.add(getString(R.string._15_raffle));
         mTitleList.add(getString(R.string._20_raffle));
-        mTitleList.add(getString(R.string._25_raffle));
-        mTitleList.add(getString(R.string._50_raffle));
     }
 
     private void fillLeaderboardReferencesList() {
         mLeaderBoardReferences.add("5Raffle");
+        mLeaderBoardReferences.add("5Raffle");
         mLeaderBoardReferences.add("10Raffle");
+        mLeaderBoardReferences.add("15Raffle");
         mLeaderBoardReferences.add("20Raffle");
-        mLeaderBoardReferences.add("25Raffle");
-        mLeaderBoardReferences.add("50Raffle");
     }
 
     private void rankListOfUsers() {

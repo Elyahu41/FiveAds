@@ -1,10 +1,8 @@
 package com.ej.fiveads.activities;
 
-import static com.ej.fiveads.activities.MainActivity.mDeviceDefaults;
 import static com.ej.fiveads.classes.RaffleData.MONTHLY;
 import static com.ej.fiveads.classes.RaffleData.WEEKLY;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -51,7 +49,6 @@ public class RaffleSubmitActivity extends AppCompatActivity {
     private Bundle mBundle;
     private final String TAG = "RaffleSubmitActivity";
     private TextView mTicketsAlreadySubmittedTV;
-    private SharedPreferences mSharedPreferences;
     private CountDownTimer timer;
     private int raffleType;
     private boolean isNotValidRaffle = false;
@@ -64,7 +61,6 @@ public class RaffleSubmitActivity extends AppCompatActivity {
         setContentView(R.layout.activity_raffle_submit);
         Objects.requireNonNull(getSupportActionBar()).hide();
         Calendar calendar = Calendar.getInstance();
-        mSharedPreferences = getSharedPreferences(mDeviceDefaults, MODE_PRIVATE);
         mOffsetRef = FirebaseDatabase.getInstance().getReference(".info/serverTimeOffset");
 
         TextView title = findViewById(R.id.titleTextView);
@@ -330,7 +326,6 @@ public class RaffleSubmitActivity extends AppCompatActivity {
     }
 
     private void launchPlayStoreReview() {
-       // if (!mSharedPreferences.getBoolean("hasBeenAskedToReview", false)) {
         ReviewManager manager = ReviewManagerFactory.create(this);
         Task<ReviewInfo> request = manager.requestReviewFlow();
         request.addOnCompleteListener(task -> {
@@ -346,8 +341,6 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                 Log.d(TAG, "Error: " + Objects.requireNonNull(task.getException()).getMessage());
             }
         });
-            //mSharedPreferences.edit().putBoolean("hasBeenAskedToReview", true).apply();
-       // }
     }
 
     private void initializeDatabaseListeners() {

@@ -24,8 +24,10 @@
     <string name="come_back_tomorrow">Come back tomorrow!</string>
     <string name="energy">Energy</string>
     <string name="_1_raffle">$1 Raffle</string>
+    <string name="_5_raffle_weekly">$5 Raffle (Weekly)</string>
     <string name="_5_raffle">$5 Raffle</string>
     <string name="_10_raffle">$10 Raffle</string>
+    <string name="_15_raffle">$15 Raffle</string>
     <string name="_20_raffle">$20 Raffle</string>
     <string name="_25_raffle">$25 Raffle</string>
     <string name="_50_raffle">$50 Raffle</string>
@@ -33,6 +35,7 @@
     <string name="win_1">Win $1!</string>
     <string name="win_5">Win $5!</string>
     <string name="win_10">Win $10!</string>
+    <string name="win_15">Win $15!</string>
     <string name="win_20">Win $20!</string>
     <string name="win_25">Win $25!</string>
     <string name="win_50">Win $50!</string>
