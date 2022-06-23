@@ -17,15 +17,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="130dp"
             android:padding="8dp">
 
             <TextView
                 android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@color/gold"
-                android:backgroundTint="@color/black"
+                android:background="@drawable/border"
                 android:backgroundTintMode="screen"
                 android:layout_gravity="center"
                 app:drawableStartCompat="@drawable/tickets" />
@@ -38,15 +37,16 @@
                 android:gravity="center"
                 android:textSize="40sp"
                 android:textStyle="bold" />
+
         </LinearLayout>
 
         <Button
-            android:id="@+id/watchAd"
+            android:id="@+id/send_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/get_tickets"
             android:padding="8dp"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="80dp"
             android:layout_gravity="center"/>
 
         <TextView
@@ -55,7 +55,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:padding="4dp"
+            android:padding="8dp"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -63,7 +63,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:padding="4dp">
+            android:padding="18dp">
 
             <ImageView
                 android:layout_width="52dp"
@@ -88,14 +88,14 @@
     </LinearLayout>
 
     <!-- for development "ca-app-pub-3940256099942544/6300978111" -->
-    <!--TODO for actual use "ca-app-pub-3199244267160640/8318978808" -->
+    <!-- for actual use "ca-app-pub-3199244267160640/8318978808" -->
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_gravity="bottom|center"
         android:layout_marginTop="20dp"
-        android:layout_alignParentBottom="true"
         app:adSize="BANNER"
         app:adUnitId="ca-app-pub-3199244267160640/8318978808" />
 

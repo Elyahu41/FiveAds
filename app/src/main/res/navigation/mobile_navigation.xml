@@ -17,4 +17,16 @@
         android:label=""
         tools:layout="@layout/fragment_spend" />
 
+    <fragment
+        android:id="@+id/navigation_leaderboard"
+        android:name="com.ej.fiveads.activities.ui.leaderboard.LeaderboardFragment"
+        android:label=""
+        tools:layout="@layout/fragment_leaderboard" />
+
+    <fragment
+        android:id="@+id/navigation_redeem"
+        android:name="com.ej.fiveads.activities.ui.redeem.RedeemFragment"
+        android:label=""
+        tools:layout="@layout/fragment_leaderboard" />
+
 </navigation>

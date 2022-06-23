@@ -44,22 +44,28 @@ public class RaffleAdapter extends RecyclerView.Adapter<RaffleAdapter.RaffleView
     public void onBindViewHolder(@NonNull RaffleViewHolder holder, int position) {
         holder.setIsRecyclable(false);
         if (mRaffleAndAdList.get(position) instanceof RaffleData) {
-            if (((RaffleData) mRaffleAndAdList.get(position)).getRaffleType() == RaffleData.WEEKLY) {
-                holder.mAdTitle.setText(R.string.weekly);
-                holder.mAdTitle.setBackgroundColor(mContext.getResources().getColor(R.color.red, mContext.getTheme()));
-            } else if (((RaffleData) mRaffleAndAdList.get(position)).getRaffleType() == RaffleData.MONTHLY) {
-                holder.mAdTitle.setText(R.string.monthly);
+            if (((RaffleData) mRaffleAndAdList.get(position)).getRaffleDifficulty() == RaffleData.EASY) {
+                holder.mAdTitle.setVisibility(View.VISIBLE);
+                holder.mAdTitle.setText(R.string.easy);
+                holder.mAdTitle.setBackgroundColor(mContext.getResources().getColor(R.color.light_green, mContext.getTheme()));
+            } else if (((RaffleData) mRaffleAndAdList.get(position)).getRaffleDifficulty() == RaffleData.MEDIUM) {
+                holder.mAdTitle.setVisibility(View.VISIBLE);
+                holder.mAdTitle.setText(R.string.medium);
                 holder.mAdTitle.setBackgroundColor(mContext.getResources().getColor(R.color.yellow, mContext.getTheme()));
+            } else if (((RaffleData) mRaffleAndAdList.get(position)).getRaffleDifficulty() == RaffleData.HARD) {
+                holder.mAdTitle.setVisibility(View.VISIBLE);
+                holder.mAdTitle.setText(R.string.hard);
+                holder.mAdTitle.setBackgroundColor(mContext.getResources().getColor(R.color.red, mContext.getTheme()));
             }
+            holder.mAdTitle.setSelected(true);
             holder.mImage.setImageResource(((RaffleData) mRaffleAndAdList.get(position)).getRaffleImage());
             holder.mTitle.setText(((RaffleData) mRaffleAndAdList.get(position)).getRaffleName());
             if (!(((RaffleData) mRaffleAndAdList.get(position)).getRaffleImage() == R.drawable.coming_soon)) {
                 holder.mCardView.setOnClickListener(view -> {
                     Intent mIntent = new Intent(mContext, RaffleSubmitActivity.class);
                     mIntent.putExtra("Title", ((RaffleData) mRaffleAndAdList.get(position)).getRaffleName());
-                    mIntent.putExtra("Image", ((RaffleData) mRaffleAndAdList.get(position)).getRaffleImage());
+                    //mIntent.putExtra("Image", ((RaffleData) mRaffleAndAdList.get(position)).getRaffleImage());
                     mIntent.putExtra("DatabaseRef", ((RaffleData) mRaffleAndAdList.get(position)).getDatabaseRef());
-                    mIntent.putExtra("RaffleType", ((RaffleData) mRaffleAndAdList.get(position)).getRaffleType());
                     mContext.startActivity(mIntent);
                 });
             }
@@ -67,7 +73,7 @@ public class RaffleAdapter extends RecyclerView.Adapter<RaffleAdapter.RaffleView
             NativeAdView adView = (NativeAdView) LayoutInflater.from(mContext).inflate(R.layout.ad_unified, null);
             populateNativeAdView((NativeAd) mRaffleAndAdList.get(position), adView);
             holder.mFrameLayout.addView(adView);
-            holder.mCardView.setVisibility(View.GONE);
+            holder.mCardView.setVisibility(View.GONE);//only show ad
         }
     }
 

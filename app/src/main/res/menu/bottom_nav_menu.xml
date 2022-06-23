@@ -3,12 +3,22 @@
 
     <item
         android:id="@+id/navigation_earn"
-        android:icon="@drawable/ic_baseline_play_arrow_24"
-        android:title="@string/earn" />
+        android:icon="@drawable/com_facebook_button_send_icon_white"
+        android:title="@string/chat_earn" />
 
     <item
         android:id="@+id/navigation_spend"
+        android:icon="@drawable/doubledown"
+        android:title="@string/spin" />
+
+    <item
+        android:id="@+id/navigation_leaderboard"
+        android:icon="@drawable/ic_leaderboard"
+        android:title="@string/leaderboards" />
+
+    <item
+        android:id="@+id/navigation_redeem"
         android:icon="@drawable/money"
-        android:title="@string/spend" />
+        android:title="@string/redeem" />
 
 </menu>

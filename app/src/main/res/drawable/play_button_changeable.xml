@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- An element which allows two drawable items to be listed.-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true" android:drawable="@drawable/colorful_purple" /> <!--pressed -->
+    <item android:drawable="@drawable/border" /> <!-- Normal -->
+</selector>

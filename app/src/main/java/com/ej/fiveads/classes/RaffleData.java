@@ -5,15 +5,18 @@ public class RaffleData {
     private final String raffleName;
     private final int raffleImage;
     private final String databaseRef;
-    public static final int WEEKLY = 1;
-    public static final int MONTHLY = 2;
-    private final int raffleType;
 
-    public RaffleData(String raffleName, int raffleImage, String databaseRef, int type) {
+    private final int raffleDifficulty;
+    public static final int EASY = 1;
+    public static final int MEDIUM = 2;
+    public static final int HARD = 3;
+
+
+    public RaffleData(String raffleName, int raffleImage, String databaseRef, int raffleDifficulty) {
         this.raffleName = raffleName;
         this.raffleImage = raffleImage;
         this.databaseRef = databaseRef;
-        this.raffleType = type;
+        this.raffleDifficulty = raffleDifficulty;
     }
 
     public String getRaffleName() {
@@ -28,7 +31,7 @@ public class RaffleData {
         return databaseRef;
     }
 
-    public int getRaffleType() {
-        return raffleType;
+    public int getRaffleDifficulty() {
+        return this.raffleDifficulty;
     }
 }

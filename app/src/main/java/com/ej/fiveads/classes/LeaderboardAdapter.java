@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.ej.fiveads.R;
 
 import java.util.List;
-import java.util.Locale;
 
 public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.LeaderboardViewHolder>{
 
@@ -50,8 +49,14 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
         } else {
             holder.mUserRank.setText(String.format("%s.", mUserList.get(position).getRank()));
         }
-        holder.mUsername.setText(mUserList.get(position).getName());
-        holder.mUserTicketsSubmitted.setText(String.format(Locale.getDefault(), "%,d", mUserList.get(position).getTicketsSubmitted()));
+
+        if (mUserList.get(position).getRaffleAmount().equals("NA")) {
+            holder.mUserRank.setVisibility(View.INVISIBLE);
+            holder.mUsername.setText(mUserList.get(position).getName());
+        } else {
+            String userHasWon = mUserList.get(position).getName() + " has received " + mUserList.get(position).getRaffleAmount().replace("Raffle", "");
+            holder.mUsername.setText(userHasWon);
+        }
     }
 
     @Override
@@ -63,13 +68,11 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
 
         private final TextView mUserRank;
         private final TextView mUsername;
-        private final TextView mUserTicketsSubmitted;
 
         public LeaderboardViewHolder(View itemView) {
             super(itemView);
             mUserRank = itemView.findViewById(R.id.userRank);
             mUsername = itemView.findViewById(R.id.usernameEntry);
-            mUserTicketsSubmitted = itemView.findViewById(R.id.userTicketsSubmitted);
         }
     }
 }

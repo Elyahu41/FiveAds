@@ -12,7 +12,7 @@
         android:id="@+id/userRank"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_marginStart="36dp"
+        android:layout_marginStart="12dp"
         android:padding="8dp"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -25,23 +25,11 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:padding="8dp"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/userRank"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/userTicketsSubmitted"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_marginEnd="16dp"
-        android:background="@drawable/border"
-        android:padding="8dp"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:maxLines="1"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/userRank"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

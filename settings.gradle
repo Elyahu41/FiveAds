@@ -8,3 +8,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Five ads"
 include ':app'
+include ':luckywheel'

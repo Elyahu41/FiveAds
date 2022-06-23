@@ -29,7 +29,7 @@ public class DailyNotifications extends BroadcastReceiver {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
-                    "Daily Reminder",
+                    "Daily Chat Reminder",
                     "Daily Notifications",
                     NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription("This notification will remind you to earn your tickets everyday!");
@@ -51,14 +51,14 @@ public class DailyNotifications extends BroadcastReceiver {
 
         Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
-        NotificationCompat.Builder mNotifyBuilder = new NotificationCompat.Builder(context, "Daily Reminder")
+        NotificationCompat.Builder mNotifyBuilder = new NotificationCompat.Builder(context, "Daily Chat Reminder")
                 .setSmallIcon(R.drawable.ic_baseline_play_arrow_24)
                 .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher_foreground))
                 .setContentTitle(context.getString(R.string.app_name))
                 .setContentText("Don't forget to earn your tickets today! The more tickets you enter, the greater your chance to win!")
                 .setStyle(new NotificationCompat
                         .BigTextStyle()
-                        .setBigContentTitle("5 Ads")
+                        .setBigContentTitle(context.getString(R.string.app_name))
                         .setSummaryText("Do Your Dailies!")
                         .bigText("Don't forget to earn your tickets today! The more tickets you enter, the greater your chance to win!"))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)

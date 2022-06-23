@@ -1,22 +1,20 @@
 package com.ej.fiveads.activities;
 
-import static com.ej.fiveads.classes.RaffleData.MONTHLY;
-import static com.ej.fiveads.classes.RaffleData.WEEKLY;
+import static com.ej.fiveads.activities.MainActivity.mDeviceDefaults;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.ej.fiveads.R;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.play.core.review.ReviewInfo;
 import com.google.android.play.core.review.ReviewManager;
 import com.google.android.play.core.review.ReviewManagerFactory;
@@ -29,55 +27,80 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+
+import rubikstudio.library.LuckyWheelView;
+import rubikstudio.library.model.LuckyItem;
 
 public class RaffleSubmitActivity extends AppCompatActivity {
 
-    private int mUserSelectedTicketsToSubmit;
     private FirebaseUser mFirebaseUser;
     private DatabaseReference mLeaderboardsDatabase;
-    private DatabaseReference mTicketsDatabase;
+    private DatabaseReference mUsersDatabase;
     private int mNumberOfUsableTickets;
-    private int mTicketsAlreadySubmitted;
     private TextView mTicketsTV;
-    private String mCurrentLeaderboardDate;
+    private TextView mMoneyTV;
     private Bundle mBundle;
     private final String TAG = "RaffleSubmitActivity";
-    private TextView mTicketsAlreadySubmittedTV;
-    private CountDownTimer timer;
-    private int raffleType;
+    private String mGameRisk;
     private boolean isNotValidRaffle = false;
-    private boolean mIsTimeCorrect;
-    private DatabaseReference mOffsetRef;
+    private List<LuckyItem> mLuckyItems;
+    private final String[] mGameResults = new String[12];
+    boolean lastWasWhite = false;
+    private rubikstudio.library.DistributedRandomNumberGenerator mNumberGenerator;
+    private Activity mActivity;
+    private double mMoneyUserHas;
+    private AdView mAdView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_raffle_submit);
         Objects.requireNonNull(getSupportActionBar()).hide();
-        Calendar calendar = Calendar.getInstance();
-        mOffsetRef = FirebaseDatabase.getInstance().getReference(".info/serverTimeOffset");
+        mActivity = this;
+
+        mAdView = findViewById(R.id.adViewRS);//RS = Raffle Submit (activity)
+        mAdView.loadAd(new AdRequest.Builder().build());
 
         TextView title = findViewById(R.id.titleTextView);
-        ImageView imageView = findViewById(R.id.submitImage);
         mTicketsTV = findViewById(R.id.numberOfTicketsTextView);
-        mTicketsAlreadySubmittedTV = findViewById(R.id.numberOfTicketsSubmittedTextView);
-        Button minus1 = findViewById(R.id.buttonMinus1);
-        EditText editText = findViewById(R.id.editText);
-        Button plus1 = findViewById(R.id.buttonPlus1);
-        Button submitButton = findViewById(R.id.submitButton);
+        mMoneyTV = findViewById(R.id.moneyTextView);
+
+        LuckyWheelView luckyWheelView = findViewById(R.id.luckyWheel);
+        mLuckyItems = new ArrayList<>();
+
 
         mBundle = getIntent().getExtras();
         if (mBundle != null) {
             title.setText(mBundle.getString("Title"));
-            imageView.setImageResource(mBundle.getInt("Image"));
-            raffleType = mBundle.getInt("RaffleType");
+            mGameRisk = mBundle.getString("DatabaseRef");
         }
+
+        mNumberGenerator = new rubikstudio.library.DistributedRandomNumberGenerator();
+
+        switch (mGameRisk) {
+            case "20Raffle":
+                fill20dollarList();
+                break;
+            case "15Raffle":
+                fill15dollarList();
+                break;
+            case "10Raffle":
+                fill10dollarList();
+                break;
+            case "5Raffle":
+                fill5dollarList();
+                break;
+        }
+
+        luckyWheelView.getPielView().setGenerator(mNumberGenerator);
+        luckyWheelView.setData(mLuckyItems);
+        luckyWheelView.setRound(10);
 
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -87,284 +110,330 @@ public class RaffleSubmitActivity extends AppCompatActivity {
         }
 
         if (mFirebaseUser != null) {
-            mTicketsDatabase = database.getReference("Users");
+            mUsersDatabase = database.getReference("Users");
             mLeaderboardsDatabase = database.getReference("Leaderboards");
-            if (raffleType != WEEKLY) {
-                mCurrentLeaderboardDate = "Leaderboards" +
-                        calendar.get(Calendar.YEAR) +
-                        calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH);//Final String should look like Leaderboards2021Oct
-            } else {
-                if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
-                    calendar.add(Calendar.DATE, 1);
-                }
-                while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
-                    calendar.add(Calendar.DATE, 1);
-                }
-                mCurrentLeaderboardDate = "Leaderboards" +
-                        calendar.get(Calendar.YEAR) +
-                        calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH) +
-                        calendar.get(Calendar.DAY_OF_MONTH);//Final String should look like Leaderboards2021Oct20
-            }
             initializeDatabaseListeners();//to see the value of total and usable tickets
         }
 
-        minus1.setOnClickListener(v -> {
-            if (!editText.getText().toString().isEmpty()) {
-                mUserSelectedTicketsToSubmit = Integer.parseInt(editText.getText().toString());
-            }
-            if (mUserSelectedTicketsToSubmit > 0) {
-                mUserSelectedTicketsToSubmit--;
-                editText.setText(String.valueOf(mUserSelectedTicketsToSubmit));
+        Button playButton = findViewById(R.id.play_button);
+        playButton.setOnClickListener(v -> {
+            if (mNumberOfUsableTickets > 0) {
+                luckyWheelView.startLuckyWheelWithTargetIndex(mNumberGenerator.getDistributedRandomNumber());
+            } else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(RaffleSubmitActivity.this);
+                builder.setMessage("You don't have enough tickets to play this game. Please get more tickets to play this game.")
+                        .setCancelable(false)
+                        .setPositiveButton("OK", (dialog, id) -> {
+                            dialog.cancel();
+                            finish();
+                        });
+                AlertDialog alert = builder.create();
+                alert.show();
             }
         });
 
-        editText.setOnFocusChangeListener((v, hasFocus) -> {
-            mUserSelectedTicketsToSubmit = mNumberOfUsableTickets;
-            editText.setText(String.valueOf(mUserSelectedTicketsToSubmit));
-        });
-
-        editText.setOnEditorActionListener((v, actionId, event) -> {
-            if (!editText.getText().toString().isEmpty()) {
-                mUserSelectedTicketsToSubmit = Integer.parseInt(editText.getText().toString());
-            }
-            return false;
-        });
-
-        plus1.setOnClickListener(v -> {
-            if (!editText.getText().toString().isEmpty()) {
-                mUserSelectedTicketsToSubmit = Integer.parseInt(editText.getText().toString());
-            }
-            mUserSelectedTicketsToSubmit++;
-            editText.setText(String.valueOf(mUserSelectedTicketsToSubmit));
-        });
-
-        submitButton.setOnClickListener(v -> {
+        luckyWheelView.setLuckyRoundItemSelectedListener(index -> {// listener after finish lucky wheel
             if (isNotValidRaffle) {
-                new AlertDialog.Builder(this)
+                new AlertDialog.Builder(getApplicationContext())
                         .setTitle("Invalid Raffle")
-                        .setMessage("This raffle is not currently ongoing. Please update the app to see new raffles or choose another raffle.")
+                        .setMessage("This game is not currently ongoing. Please update the app to see new games or choose another game.")
                         .setPositiveButton("Ok", (dialog, which) -> launchPlayStoreReview())
                         .create()
                         .show();
             } else {
-                if (!mIsTimeCorrect) {
-                    new AlertDialog.Builder(this)
-                            .setTitle("Your system time is incorrect!")
-                            .setMessage("Your system time is off by more than a day! This will cause your tickets to go to the wrong raffle! " +
-                                    "Please fix your time before submitting your tickets!")
-                            .setPositiveButton("Ok", (dialog, which) -> launchPlayStoreReview())
-                            .create()
-                            .show();
-                } else {
-                    if (!editText.getText().toString().isEmpty()) {
-                        mUserSelectedTicketsToSubmit = Integer.parseInt(editText.getText().toString());
-                    }
-                    if (mUserSelectedTicketsToSubmit == 0) {
-                        Toast.makeText(this, R.string.you_cant_submit_nothing, Toast.LENGTH_SHORT).show();
-                    } else if (mUserSelectedTicketsToSubmit > mNumberOfUsableTickets) {
-                        Toast.makeText(this, R.string.You_do_not_have_that_many_tickets, Toast.LENGTH_SHORT).show();
-                    } else {
-                        if (mBundle != null) {
-                            mLeaderboardsDatabase.child(mBundle.getString("DatabaseRef").trim())
-                                    .child(mCurrentLeaderboardDate)
-                                    .child(mFirebaseUser.getUid())
-                                    .child("displayName")
-                                    .setValue(mFirebaseUser.getDisplayName());
-                            mLeaderboardsDatabase.child(mBundle.getString("DatabaseRef"))
-                                    .child(mCurrentLeaderboardDate)
-                                    .child(mFirebaseUser.getUid())
-                                    .child("submittedTickets").setValue(
-                                    mUserSelectedTicketsToSubmit + mTicketsAlreadySubmitted
-                            );
-                        }
-                        mTicketsDatabase.child(mFirebaseUser.getUid())
-                                .child("usableTickets")
-                                .setValue(
-                                        mNumberOfUsableTickets - mUserSelectedTicketsToSubmit
-                                );
-                        String updatedUsableTickets = String.format(Locale.ENGLISH, "%,d", mNumberOfUsableTickets - mUserSelectedTicketsToSubmit);
-                        String usableTickets = "Usable tickets: " + updatedUsableTickets;
-                        mTicketsTV.setText(usableTickets);
-                        String message;
-                        if (mUserSelectedTicketsToSubmit == 1) {
-                            message = "You have submitted " + mUserSelectedTicketsToSubmit + " ticket!";
-                        } else {
-                            message = "You have submitted " + mUserSelectedTicketsToSubmit + " tickets!";
-                        }
-                        int updatedTickets = mUserSelectedTicketsToSubmit + mTicketsAlreadySubmitted;
-                        if (updatedTickets >= 0 && updatedTickets < 25) {
-                            mTicketsAlreadySubmittedTV.setTextColor(getColor(R.color.red));
-                            message += " Please note that you need a minimum of 25 tickets to participate in the raffle.";
-                        } else {
-                            mTicketsAlreadySubmittedTV.setTextColor(getColor(R.color.green));
-                        }
+                String result = mGameResults[index];
+                switch (result) {
+                    case "$0.01":
+                        subtractOneTicketFromDB();
+                        addToUserBalance(0.01);
+                        break;
+                    case "$0.02":
+                        subtractOneTicketFromDB();
+                        addToUserBalance(0.02);
+                        break;
+                    case "$0.03":
+                        subtractOneTicketFromDB();
+                        addToUserBalance(0.03);
+                        break;
+                    case "$5":
+                        subtractOneTicketFromDB();
+                        addToWinnerListInDB(5);
+                        break;
+                    case "$10":
+                        subtractOneTicketFromDB();
+                        addToWinnerListInDB(10);
+                        break;
+                    case "$15":
+                        subtractOneTicketFromDB();
+                        addToWinnerListInDB(15);
+                        break;
+                    case "$20":
+                        subtractOneTicketFromDB();
+                        addToWinnerListInDB(20);
+                        break;
+                    case "Loss":
+                        subtractOneTicketFromDB();
                         new AlertDialog.Builder(this)
-                                .setTitle("Tickets Submitted!")
-                                .setMessage(message)
-                                .setPositiveButton("Ok", (dialog, which) -> launchPlayStoreReview())
+                                .setTitle("Loss!")
+                                .setMessage("Please try again!")
+                                .setPositiveButton("Ok", (dialog, which) -> dialog.dismiss())
                                 .create()
                                 .show();
-                    }
+                        break;
+                    case "Retry":
+                        new AlertDialog.Builder(this)
+                                .setTitle("Retry!")
+                                .setMessage("No tickets were used. Please try again!")
+                                .setPositiveButton("Ok", (dialog, which) -> dialog.dismiss())
+                                .create()
+                                .show();
+                        break;
                 }
+                launchPlayStoreReview();
+            }
+            if (mNumberOfUsableTickets == 0) {
+                playButton.setEnabled(false);
+                luckyWheelView.setTouchEnabled(false);
             }
         });
-        startCountdownTimer();
     }
 
-    private void startCountdownTimer() {
-        TextView timerView = findViewById(R.id.remainingTimeTextView);
-        Calendar calendar = Calendar.getInstance();
-        Calendar calendar2 = (Calendar) calendar.clone();
-        if (raffleType == WEEKLY) {
-            if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
-                calendar.add(Calendar.DATE, 1);
+    private void addToWinnerListInDB(int moneyWon) {
+        Map<String, String> userData = new HashMap<>();
+        userData.put("MoneyWon", String.valueOf(moneyWon));
+        userData.put("displayName", mFirebaseUser.getDisplayName());
+        userData.put("UID", mFirebaseUser.getUid());
+        userData.put("email", mFirebaseUser.getEmail());
+        userData.put("NotFromLeftInCode", "true");
+        mLeaderboardsDatabase.child("WinnersUnpaid").push().setValue(userData);
+
+        mLeaderboardsDatabase
+                .child(mGameRisk)
+                .child(Objects.requireNonNull(mFirebaseUser.getDisplayName()))
+                .setValue("");//for Leaderboard fragment
+
+        new AlertDialog.Builder(this)
+                .setTitle("Congratulations!")
+                .setMessage("You won $" + moneyWon + "!!!" + "\n\n" + "You can see your winnings in the leaderboards and an email will be sent to you shortly.")
+                .setPositiveButton("Ok", (dialog, which) -> launchPlayStoreReview())
+                .create()
+                .show();
+    }
+
+    private void addToUserBalance(double value) {
+        mUsersDatabase.child(mFirebaseUser.getUid()).child("totalMoneyEarned").setValue(mMoneyUserHas + value);
+        new AlertDialog.Builder(this)
+                .setTitle("Congratulations!")
+                .setMessage("You won $" + value + "!!!")
+                .setPositiveButton("Ok", (dialog, which) -> launchPlayStoreReview())
+                .create()
+                .show();
+    }
+
+    private void subtractOneTicketFromDB() {
+        mUsersDatabase.child(mFirebaseUser.getUid())
+                .child("usableTickets")
+                .setValue(mNumberOfUsableTickets - 1);
+        String updatedUsableTickets = String.format(Locale.ENGLISH, "%,d", mNumberOfUsableTickets - 1);
+        String usableTickets = "Usable tickets: " + updatedUsableTickets;
+        mTicketsTV.setText(usableTickets);
+    }
+
+    private void fill20dollarList() {
+        for (int i = 0; i < 12; i++) {
+            LuckyItem luckyItem = new LuckyItem();
+            if (i == 0 || i == 3 || i == 6 || i == 9) {//loser pie slices
+                luckyItem.topText = "Loss";
+                luckyItem.color = getColor(R.color.red);
+                luckyItem.icon = R.drawable.red_x;
+                mGameResults[i] = "Loss";
+                mNumberGenerator.addNumber(i, 0.6d / 4.0d);//60% chance of getting a loss split between 4 pie slices
+            } else if (i == 1) {//winner pie slice
+                luckyItem.topText = "Win $0.01";
+                luckyItem.color = getColor(R.color.light_green);
+                luckyItem.icon = R.drawable.money_48;
+                mGameResults[i] = "$0.01";
+                mNumberGenerator.addNumber(i, 0.05d);//5% chance
+            } else if (i == 10) {//winner pie slice
+                luckyItem.topText = "Win $20";
+                luckyItem.color = getColor(R.color.green);
+                luckyItem.icon = R.drawable.money_48;
+                mGameResults[i] = "$20";
+                mNumberGenerator.addNumber(i, 0.000001d);//.00001% chance to win $20
+            } else {//ticket pie slices
+                luckyItem.topText = "Retry";
+                if (lastWasWhite) {
+                    luckyItem.color = 0xffFFF3E0;
+                    lastWasWhite = false;
+                } else {
+                    lastWasWhite = true;
+                }
+                luckyItem.icon = R.drawable.ticket;
+                mGameResults[i] = "Retry";
+                mNumberGenerator.addNumber(i, 0.05d);//5% * 6 = 30% chance
             }
-            while (calendar.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
-                calendar.add(Calendar.DATE, 1);
-            }
-            calendar.set(Calendar.HOUR_OF_DAY, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.SECOND, 0);
-            Log.d(TAG, "Time till end of raffle: " + (calendar.getTimeInMillis() - calendar2.getTimeInMillis()));
-            timer = new CountDownTimer(calendar.getTimeInMillis() - calendar2.getTimeInMillis(),1000) {
-                @Override
-                public void onTick(long millisUntilFinished) {
-                    long days = TimeUnit.MILLISECONDS.toDays(millisUntilFinished);
-                    millisUntilFinished -= TimeUnit.DAYS.toMillis(days);
-                    long hour = TimeUnit.MILLISECONDS.toHours(millisUntilFinished);
-                    millisUntilFinished -= TimeUnit.HOURS.toMillis(hour);
-                    long minutes = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished);
-                    millisUntilFinished -= TimeUnit.MINUTES.toMillis(minutes);
-                    long seconds = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished);
-                    String timeTillEndOfTheWeek = hour + ":" + minutes + ":" + seconds;
-                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-                    try {
-                        timeTillEndOfTheWeek = sdf.format(Objects.requireNonNull(sdf.parse(timeTillEndOfTheWeek)));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    String str = days + "d " + timeTillEndOfTheWeek;
-                    String finalString = "Raffle ends in " + str;
-                    timerView.setText(finalString);
-                }
-                @Override
-                public void onFinish() {
-                    finish();
-                }
-            }.start();
-        }
-        if (raffleType == MONTHLY) {
-            calendar.add(Calendar.MONTH,1);
-            calendar.set(Calendar.DAY_OF_MONTH, 1);
-            calendar.set(Calendar.HOUR_OF_DAY, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.SECOND, 0);
-            timer = new CountDownTimer(calendar.getTimeInMillis() - calendar2.getTimeInMillis(),1000) {
-                @Override
-                public void onTick(long millisUntilFinished) {
-                    long days = TimeUnit.MILLISECONDS.toDays(millisUntilFinished);
-                    millisUntilFinished -= TimeUnit.DAYS.toMillis(days);
-                    long hour = TimeUnit.MILLISECONDS.toHours(millisUntilFinished);
-                    millisUntilFinished -= TimeUnit.HOURS.toMillis(hour);
-                    long minutes = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished);
-                    millisUntilFinished -= TimeUnit.MINUTES.toMillis(minutes);
-                    long seconds = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished);
-                    String timeTillEndOfTheMonth = hour + ":" + minutes + ":" + seconds;
-                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-                    try {
-                        timeTillEndOfTheMonth = sdf.format(Objects.requireNonNull(sdf.parse(timeTillEndOfTheMonth)));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    String str = days + "d " + timeTillEndOfTheMonth;
-                    String finalString = "Raffle ends in " + str;
-                    timerView.setText(finalString);
-                }
-                @Override
-                public void onFinish() {
-                    finish();
-                }
-            }.start();
+            mLuckyItems.add(luckyItem);
         }
     }
 
-    @Override
-    protected void onPause() {
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-        }
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        checkTimeWithFirebase();
-        if (timer == null) {
-            startCountdownTimer();
-        }
-        super.onResume();
-    }
-
-    private void checkTimeWithFirebase() {
-        mOffsetRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.getValue(Long.class) != null) {
-                    //noinspection ConstantConditions
-                    long offset = snapshot.getValue(Long.class);
-                    mIsTimeCorrect = offset <= 86_400_000 && offset >= -86_400_000;
-                    Log.d(TAG, "offset is: " + offset);
+    private void fill15dollarList() {
+        for (int i = 0; i < 12; i++) {
+            LuckyItem luckyItem = new LuckyItem();
+            if (i == 0 || i == 3 || i == 6) {//loser pie slices
+                luckyItem.topText = "Loss";
+                luckyItem.color = getColor(R.color.red);
+                luckyItem.icon = R.drawable.red_x;
+                mGameResults[i] = "Loss";
+                mNumberGenerator.addNumber(i, 0.5d / 3.0d);//50% chance of getting a loss split between 3 pie slices
+            } else if (i == 1) {//winner pie slice
+                luckyItem.topText = "Win $0.01";
+                luckyItem.color = getColor(R.color.light_green);
+                luckyItem.icon = R.drawable.money_48;
+                mGameResults[i] = "$0.01";
+                mNumberGenerator.addNumber(i, 0.05d);//5% chance
+            } else if (i == 10) {//winner pie slice
+                luckyItem.topText = "Win $15";
+                luckyItem.color = getColor(R.color.green);
+                luckyItem.icon = R.drawable.money_48;
+                mGameResults[i] = "$15";
+                mNumberGenerator.addNumber(i, 0.000001d);//.00001% chance to win $15
+            } else {//ticket pie slices
+                luckyItem.topText = "Retry";
+                if (lastWasWhite) {
+                    luckyItem.color = 0xffFFF3E0;
+                    lastWasWhite = false;
+                } else {
+                    lastWasWhite = true;
                 }
+                luckyItem.icon = R.drawable.ticket;
+                mGameResults[i] = "Retry";
+                mNumberGenerator.addNumber(i, 0.05d);//5% * 7 = 35% chance
             }
+            mLuckyItems.add(luckyItem);
+        }
+    }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.d(TAG, "error is " + error.toString());
+    private void fill10dollarList() {
+        for (int i = 0; i < 12; i++) {
+            LuckyItem luckyItem = new LuckyItem();
+            if (i == 0 || i == 3) {//loser pie slices
+                luckyItem.topText = "Loss";
+                luckyItem.color = getColor(R.color.red);
+                luckyItem.icon = R.drawable.red_x;
+                mGameResults[i] = "Loss";
+                mNumberGenerator.addNumber(i, 0.6d / 2.0d);//60% chance of getting a loss split between 3 pie slices
+            } else if (i == 1) {//winner pie slice
+                luckyItem.topText = "Win $0.01";
+                luckyItem.color = getColor(R.color.light_green);
+                luckyItem.icon = R.drawable.money_48;
+                mGameResults[i] = "$0.01";
+                mNumberGenerator.addNumber(i, 0.05d);//5% chance
+            } else if (i == 4) {//winner pie slice
+                luckyItem.topText = "Win $0.02";
+                luckyItem.color = getColor(R.color.light_green);
+                luckyItem.icon = R.drawable.money_48;
+                mGameResults[i] = "$0.02";
+                mNumberGenerator.addNumber(i, 0.05d);//5% chance
+            } else if (i == 10) {//winner pie slice
+                luckyItem.topText = "Win $10";
+                luckyItem.color = getColor(R.color.green);
+                luckyItem.icon = R.drawable.money_48;
+                mGameResults[i] = "$10";
+                mNumberGenerator.addNumber(i, 0.000001d);//.00001% chance to win $10
+            } else {//ticket pie slices
+                luckyItem.topText = "Retry";
+                if (lastWasWhite) {
+                    luckyItem.color = 0xffFFF3E0;
+                    lastWasWhite = false;
+                } else {
+                    lastWasWhite = true;
+                }
+                luckyItem.icon = R.drawable.ticket;
+                mGameResults[i] = "Retry";
+                mNumberGenerator.addNumber(i, 0.05d);//5% * 7 = 35% chance
             }
-        });
+            mLuckyItems.add(luckyItem);
+        }
+    }
+
+    private void fill5dollarList() {
+        for (int i = 0; i < 12; i++) {
+            LuckyItem luckyItem = new LuckyItem();
+            if (i == 0) {//loser pie slices
+                luckyItem.topText = "Loss";
+                luckyItem.color = getColor(R.color.red);
+                luckyItem.icon = R.drawable.red_x;
+                mGameResults[i] = "Loss";
+                mNumberGenerator.addNumber(i, 0.5d);//50% chance of getting a loss
+            } else if (i == 1) {//winner pie slice
+                luckyItem.topText = "Win $0.01";
+                luckyItem.color = getColor(R.color.light_green);
+                luckyItem.icon = R.drawable.money_48;
+                mGameResults[i] = "$0.01";
+                mNumberGenerator.addNumber(i, 0.07d);//7% chance
+            } else if (i == 4) {//winner pie slice
+                luckyItem.topText = "Win $0.02";
+                luckyItem.color = getColor(R.color.light_green);
+                luckyItem.icon = R.drawable.money_48;
+                mGameResults[i] = "$0.02";
+                mNumberGenerator.addNumber(i, 0.05d);//5% chance
+            } else if (i == 7) {//winner pie slice
+                luckyItem.topText = "Win $0.03";
+                luckyItem.color = getColor(R.color.light_green);
+                luckyItem.icon = R.drawable.money_48;
+                mGameResults[i] = "$0.03";
+                mNumberGenerator.addNumber(i, 0.05d);//5% chance
+            } else if (i == 10) {//winner pie slice
+                luckyItem.topText = "Win $5";
+                luckyItem.color = getColor(R.color.green);
+                luckyItem.icon = R.drawable.money_48;
+                mGameResults[i] = "$5";
+                mNumberGenerator.addNumber(i, 0.000001d);//.00001% chance to win $10
+            } else {//ticket pie slices
+                luckyItem.topText = "Retry";
+                if (lastWasWhite) {
+                    luckyItem.color = 0xffFFF3E0;
+                    lastWasWhite = false;
+                } else {
+                    lastWasWhite = true;
+                }
+                luckyItem.icon = R.drawable.ticket;
+                mGameResults[i] = "Retry";
+                mNumberGenerator.addNumber(i, 0.05d);//5% * 7 = 35% chance
+            }
+            mLuckyItems.add(luckyItem);
+        }
     }
 
     private void launchPlayStoreReview() {
+        if (getSharedPreferences(mDeviceDefaults, MODE_PRIVATE).getBoolean("PREF_REVIEW_LAUNCHED", false)) {
+            return;
+        }
         ReviewManager manager = ReviewManagerFactory.create(this);
-        Task<ReviewInfo> request = manager.requestReviewFlow();
-        request.addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {// We can get the ReviewInfo object
-                ReviewInfo reviewInfo = task.getResult();
-                Task<Void> flow = manager.launchReviewFlow(this, reviewInfo);
-                flow.addOnCompleteListener(task2 -> {
-                    if (task2.isSuccessful()) {
-                        Log.d(TAG, "Review Successful");//TODO test
+        manager.requestReviewFlow()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // We can get the ReviewInfo object
+                        ReviewInfo reviewInfo = task.getResult();
+                        // and use it to request a review.
+                        Task<Void> flow = manager.launchReviewFlow(mActivity, reviewInfo);
+                        flow.addOnCompleteListener(task1 -> {
+                            // The flow has finished. The API does not indicate whether the user
+                            // reviewed or not, or even whether the review dialog was shown. Thus, no
+                            // matter the result, we continue our app flow.
+                            // We log the result.
+                            Log.d(TAG, "Review flow result: " + task1.isSuccessful());
+                            getSharedPreferences(mDeviceDefaults, MODE_PRIVATE).edit().putBoolean("PREF_REVIEW_LAUNCHED", true).apply();
+                        });
                     }
                 });
-            } else {// There was some problem, log or handle the error code.
-                Log.d(TAG, "Error: " + Objects.requireNonNull(task.getException()).getMessage());
-            }
-        });
     }
 
     private void initializeDatabaseListeners() {
-        ValueEventListener submittedTicketsListener = new ValueEventListener() {// Read from the database whenever there's a change
+        ValueEventListener raffleValidListener = new ValueEventListener() {// Read from the database whenever there's a change
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (!dataSnapshot.child(mBundle.getString("DatabaseRef")).child(mCurrentLeaderboardDate).hasChild("isInValid")) {
-                    if (dataSnapshot.child(mBundle.getString("DatabaseRef")).child(mCurrentLeaderboardDate)
-                            .child(mFirebaseUser.getUid())
-                            .child("submittedTickets")
-                            .getValue(Integer.class) != null) {
-                        //noinspection ConstantConditions
-                        mTicketsAlreadySubmitted = dataSnapshot.child(mBundle.getString("DatabaseRef")).child(mCurrentLeaderboardDate)
-                                .child(mFirebaseUser.getUid())
-                                .child("submittedTickets")
-                                .getValue(Integer.class);//Objects.requireNonNull() did not work
-                        mTicketsAlreadySubmittedTV.setText(String.format(Locale.getDefault(), "Tickets already submitted: %d", mTicketsAlreadySubmitted));
-                        if (mTicketsAlreadySubmitted > 0 && mTicketsAlreadySubmitted < 25) {
-                            mTicketsAlreadySubmittedTV.setTextColor(getColor(R.color.red));
-                        }
-                    }
-                } else {
-                    isNotValidRaffle = true;
-                }
+                isNotValidRaffle = dataSnapshot.child(mBundle.getString("DatabaseRef")).hasChild("isInValid");
             }
 
             @Override
@@ -372,9 +441,9 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         };
-        mLeaderboardsDatabase.addValueEventListener(submittedTicketsListener);//for leaderboards and tickets submitted
+        mLeaderboardsDatabase.addValueEventListener(raffleValidListener);//to check if raffle is valid
 
-        ValueEventListener ticketListener = new ValueEventListener() {
+        ValueEventListener userListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.child(mFirebaseUser.getUid()).child("usableTickets").getValue(Integer.class) != null) {
@@ -387,6 +456,17 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                     String usableTickets = "Usable tickets: " + numberOfUsableTickets;
                     mTicketsTV.setText(usableTickets);
                 }
+
+                if (dataSnapshot.child(mFirebaseUser.getUid()).child("totalMoneyEarned").getValue(Double.class) != null) {
+                    //noinspection ConstantConditions
+                    mMoneyUserHas = dataSnapshot
+                            .child(mFirebaseUser.getUid())
+                            .child("totalMoneyEarned")
+                            .getValue(Double.class);//Objects.requireNonNull() did not work
+                    String moneyUserHas = String.format(Locale.ENGLISH, "%,.2f", mMoneyUserHas);
+                    String totalMoneyEarned = "Total money earned: $" + moneyUserHas;
+                    mMoneyTV.setText(totalMoneyEarned);
+                }
                 Log.d(TAG, "Usable Tickets Value is: " + mNumberOfUsableTickets);
             }
 
@@ -395,7 +475,30 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         };
-        mTicketsDatabase.addValueEventListener(ticketListener);//for users and tickets earned
-        checkTimeWithFirebase();
+        mUsersDatabase.addValueEventListener(userListener);//for users and tickets earned
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mAdView != null) {
+            mAdView.resume();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mAdView != null) {
+            mAdView.destroy();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mAdView != null) {
+            mAdView.pause();
+        }
     }
 }

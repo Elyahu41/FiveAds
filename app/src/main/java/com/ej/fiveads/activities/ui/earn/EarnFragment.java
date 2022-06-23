@@ -18,7 +18,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,8 +25,13 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.ej.fiveads.R;
+import com.ej.fiveads.classes.BadWordList;
+import com.ej.fiveads.classes.Message;
+import com.ej.fiveads.classes.MessageAdapter;
 import com.ej.fiveads.databinding.FragmentEarnBinding;
 import com.ej.fiveads.notifications.DailyNotifications;
 import com.firebase.ui.auth.AuthUI;
@@ -35,13 +39,13 @@ import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract;
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
@@ -49,10 +53,12 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -60,6 +66,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 public class EarnFragment extends Fragment {
 
@@ -73,28 +80,34 @@ public class EarnFragment extends Fragment {
     private FirebaseUser mFirebaseUser;
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
-    private ValueEventListener mTicketListener;
+    private ValueEventListener mUserListener;
     private FirebaseDatabase mDatabase;
-    private DatabaseReference mTicketsDatabase;
+    private DatabaseReference mUsersDatabase;
+    private DatabaseReference mMessageDatabase;
     private TextView mTicketAmount;
     private TextView mEnergyAmount;
-    private Button mWatchAdButton;
     private TextView mCountDown;
     private static RewardedAd mRewardedAd;
     private SharedPreferences mSharedPreferences;
     private final String TAG = "EarnFragment";
-    private final String mTopLevelDatabase = "Users";
+    private final String mUsersPath = "Users";
+    private final String mMessagesPath = "Messages";
     private String mCurrentKeyForTheDay;
     private boolean isAddingTickets = false;
     private CountDownTimer mCountDownTimer;
-    private AdView mAdView;
     private Context mContext;
+    private EditText mEditMessage;
+    private RecyclerView mRecyclerView;
+    private Double mMoneyUserEarned;
+    private TextView mMoneyAmount;
+
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         //EarnViewModel earnViewModel = new ViewModelProvider(this).get(EarnViewModel.class);
         binding = FragmentEarnBinding.inflate(inflater, container, false);
         mContext = getContext();
         initializeAds();
+        mSharedPreferences = mContext.getSharedPreferences(mDeviceDefaults, MODE_PRIVATE);
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance();
@@ -106,51 +119,54 @@ public class EarnFragment extends Fragment {
         initializeStateListener();//for user login
 
         if (mFirebaseUser != null) {
-            mTicketsDatabase = mDatabase.getReference(mTopLevelDatabase);//we use the User/UID for the number of USABLE tickets the user has
+            mUsersDatabase = mDatabase.getReference(mUsersPath);//Users/UID we use the UID for the number of USABLE tickets the user has
+            mMessageDatabase = mDatabase.getReference(mMessagesPath);//Messages
             initializeDatabaseListener();//to see the value of total and usable tickets
         }
 
-        mSharedPreferences = requireActivity().getSharedPreferences(mDeviceDefaults, MODE_PRIVATE);
-        mTicketAmount = binding.ticketAmount;
-        mEnergyAmount = binding.amountOfEnergyRemaining;
-        mWatchAdButton = binding.watchAd;
         mCountDown = binding.countdown;
+        mCountDown.setVisibility(View.INVISIBLE);
+        mEnergyAmount = binding.amountOfEnergyRemaining;
+        mTicketAmount = binding.ticketAmount;
+        mMoneyAmount = binding.moneyAmount;
+
+        mRecyclerView = binding.messageRV;
+        mRecyclerView.setHasFixedSize(true);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(mContext);
+        linearLayoutManager.setStackFromEnd(true);
+        mRecyclerView.setLayoutManager(linearLayoutManager);
+
+        mEditMessage = binding.editTextMessage;
+        FloatingActionButton floatingActionButton = binding.sendMessage;
 
         updateCurrentEnergy();
 
-        if (mRewardedAd == null) {
-            mWatchAdButton.setEnabled(false);
-            mWatchAdButton.setText(R.string.ad_loading);
-        }
+        floatingActionButton.setOnClickListener(v -> {
 
-        mWatchAdButton.setOnClickListener(v -> {//TODO configure autoplay all 5 ads #performClick method
-            if (mRewardedAd != null) {
-                mRewardedAd.show(requireActivity(), rewardItem -> {// Handle the reward.
-                    recreateTimer(rewardItem);
-                    Log.d(TAG, "The user earned the reward.");
-                    int rewardAmount = rewardItem.getAmount();//should be only 5
-                    if (rewardItem.getType().equals("Tickets")) {
-                        mTicketsDatabase.child(mFirebaseUser.getUid()).child("usableTickets").setValue(mNumberOfUsableTickets + rewardAmount);
-                        mTicketsDatabase.child(mFirebaseUser.getUid()).child("totalTicketsEarned").setValue(mNumberOfTotalTickets + rewardAmount);
-                        if (mEnergyAmountAsInt > 0) {
-                            mEnergyAmountAsInt--;
+            if (!mEditMessage.getText().toString().isEmpty()) {
+                sendMessageToDatabase();
+
+                if (mRewardedAd != null && mEnergyAmountAsInt > 0) {
+                    mRewardedAd.show(requireActivity(), rewardItem -> {// show ad and handle the reward.
+                        recreateTimer(rewardItem);
+                        Log.d(TAG, "The user earned the reward.");
+                        int rewardAmount = rewardItem.getAmount();//should be only 1
+                        if (rewardItem.getType().equals("Ticket")) {
+                            mUsersDatabase.child(mFirebaseUser.getUid()).child("usableTickets").setValue(mNumberOfUsableTickets + rewardAmount);
+                            mUsersDatabase.child(mFirebaseUser.getUid()).child("totalTicketsEarned").setValue(mNumberOfTotalTickets + rewardAmount);
+                            if (mEnergyAmountAsInt > 0) {
+                                mEnergyAmountAsInt--;
+                            }
+                            String updatedEnergy = "Energy: " + mEnergyAmountAsInt;
+                            mEnergyAmount.setText(updatedEnergy);
+                            mSharedPreferences.edit().putInt(mCurrentKeyForTheDay, mEnergyAmountAsInt).apply();
                         }
-                        if (mEnergyAmountAsInt == 0) {
-                            mWatchAdButton.setEnabled(false);
-                            mWatchAdButton.setText(R.string.come_back_tomorrow);
-                        }
-                        String updatedEnergy = String.valueOf(mEnergyAmountAsInt);
-                        mEnergyAmount.setText(updatedEnergy);
-                        mSharedPreferences.edit().putInt(mCurrentKeyForTheDay, mEnergyAmountAsInt).apply();
-                    }
+                        initializeAds();
+                    });
+                } else {
                     initializeAds();
-                });
-            } else {
-                mWatchAdButton.setEnabled(false);
-                mWatchAdButton.setText(R.string.ad_loading);
-                initializeAds();
-                Toast.makeText(mContext, "Ad not ready", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "The rewarded ad wasn't ready yet.");
+                    Log.d(TAG, "The rewarded ad wasn't ready yet.");
+                }
             }
         });
 
@@ -158,8 +174,21 @@ public class EarnFragment extends Fragment {
         return binding.getRoot();
     }
 
+    private void sendMessageToDatabase() {
+        String messageValue = mEditMessage.getText().toString();
+        if (!messageValue.isEmpty()) {
+            for (String word : BadWordList.words) {
+                Pattern rx = Pattern.compile("\\b" + word + "\\b", Pattern.CASE_INSENSITIVE);
+                messageValue = rx.matcher(messageValue).replaceAll(new String(new char[word.length()]).replace('\0', '*'));
+            }
+            DatabaseReference newPost = mMessageDatabase.push();
+            newPost.setValue(new Message(mFirebaseUser.getDisplayName(), messageValue, mFirebaseUser.getUid(), ServerValue.TIMESTAMP));
+            mEditMessage.setText("");
+        }
+    }
+
     private void recreateTimer(RewardItem rewardItem) {
-        mCountDownTimer = new CountDownTimer(2500, 500) {
+        mCountDownTimer = new CountDownTimer(1000, 1000) {
 
             int currentTickets = mNumberOfUsableTickets;
             final int FINAL_TICKETS = currentTickets + rewardItem.getAmount();
@@ -170,19 +199,19 @@ public class EarnFragment extends Fragment {
                 isAddingTickets = true;
                 mTicketAmount.setTextColor(mContext.getResources().getColor(R.color.green, mContext.getTheme()));
                 currentTickets += 1;
-                mTicketAmount.setText(String.format(Locale.getDefault(), "%,d", currentTickets));
+                mTicketAmount.setText(String.format("Tickets: %s", String.format(Locale.getDefault(), "%,d", currentTickets)));
             }
 
             @Override
             public void onFinish() {
                 mTicketAmount.setTextColor(resetTextColor);
-                mTicketAmount.setText(String.format(Locale.getDefault(), "%,d", FINAL_TICKETS));
+                mTicketAmount.setText(String.format("Tickets: %s", String.format(Locale.getDefault(), "%,d", FINAL_TICKETS)));
                 isAddingTickets = false;
             }
         };
     }
 
-    private void initializeAds() {//TODO add resizable ads and ad on opening app
+    private void initializeAds() {//TODO add resizable ads
         MobileAds.initialize(mContext, initializationStatus -> {
                     RewardedAd.load(mContext,
                             mContext.getString(R.string.admob_main_ad_id),// replace with "ca-app-pub-3940256099942544/5224354917" for development
@@ -200,8 +229,6 @@ public class EarnFragment extends Fragment {
                                     mRewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
                                         @Override
                                         public void onAdShowedFullScreenContent() {// Called when ad is shown.
-                                            mWatchAdButton.setEnabled(false);
-                                            mWatchAdButton.setText(R.string.ad_loading);
                                             Log.d(TAG, "Ad was shown.");
                                         }
 
@@ -214,24 +241,15 @@ public class EarnFragment extends Fragment {
                                         public void onAdDismissedFullScreenContent() {// Called when ad is dismissed.
                                             Log.d(TAG, "Ad was dismissed.");
                                             mRewardedAd = null;// Set the ad reference to null so you don't show the ad a second time.
-                                            mWatchAdButton.setEnabled(false);
-                                            mWatchAdButton.setText(R.string.ad_loading);
                                             if (mEnergyAmountAsInt != 0) {
                                                 initializeAds();
                                             }
                                             mCountDownTimer.start();
                                         }
                                     });
-                                    if (mEnergyAmountAsInt != 0) {
-                                        mWatchAdButton.setEnabled(true);
-                                        mWatchAdButton.setText(R.string.get_tickets);
-                                    }
                                     Log.d(TAG, "Rewarded Ad was loaded.");
                                 }
                             });
-                    mAdView = binding.adView;
-                    mAdView.loadAd(new AdRequest.Builder().build());
-                    Log.d(TAG, "Banner Ad was loaded.");
         });
     }
 
@@ -239,11 +257,12 @@ public class EarnFragment extends Fragment {
         Calendar calendar = Calendar.getInstance();
         mCurrentKeyForTheDay = "" + calendar.get(Calendar.DAY_OF_YEAR) + "" + calendar.get(Calendar.YEAR);
         mEnergyAmountAsInt = mSharedPreferences.getInt(mCurrentKeyForTheDay, DEFAULT_MAX_ENERGY);//probably should save in server or somewhere else
-        String currentEnergy = String.valueOf(mEnergyAmountAsInt);
+        String currentEnergy = "Energy: " + mEnergyAmountAsInt;
         mEnergyAmount.setText(currentEnergy);
     }
 
     private void startCountdownTimer() {
+        mCountDown.setVisibility(View.VISIBLE);
         Calendar calendar = Calendar.getInstance();
         Calendar calendar2 = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY,0);
@@ -265,7 +284,8 @@ public class EarnFragment extends Fragment {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                mCountDown.setText(timeTillMidnight);
+                String s = "Reset: " + timeTillMidnight;
+                mCountDown.setText(s);
             }
             @Override
             public void onFinish() {
@@ -279,41 +299,25 @@ public class EarnFragment extends Fragment {
         super.onResume();
         updateCurrentEnergy();
         if (mEnergyAmountAsInt <= 0) {//should never be less than 0, but it covers edge cases
-            mWatchAdButton.setEnabled(false);
-            mWatchAdButton.setText(R.string.come_back_tomorrow);
             startCountdownTimer();
         }
         if (!isAddingTickets) {
-            mTicketAmount.setText(String.format(Locale.getDefault(), "%,d", mNumberOfUsableTickets));
-        }
-        if (mAdView != null) {
-            mAdView.resume();
+            mTicketAmount.setText(String.format("Tickets: %s", String.format(Locale.getDefault(), "%,d", mNumberOfUsableTickets)));
         }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (mAdView != null) {
-            mAdView.destroy();
-        }
         binding = null;
-    }
-
-    @Override
-    public void onPause() {
-        if (mAdView != null) {
-            mAdView.pause();
-        }
-        super.onPause();
     }
 
     @Override
     public void onStart() {
         super.onStart();
         mFirebaseAuth.addAuthStateListener(mAuthStateListener);
-        if (mTicketsDatabase != null) {
-            mTicketsDatabase.addValueEventListener(mTicketListener);//not sure if needed
+        if (mUsersDatabase != null) {
+            mUsersDatabase.addValueEventListener(mUserListener);//not sure if needed
         }
     }
 
@@ -321,13 +325,13 @@ public class EarnFragment extends Fragment {
     public void onStop() {
         super.onStop();
         mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
-        if (mTicketsDatabase != null) {
-            mTicketsDatabase.removeEventListener(mTicketListener);//not sure if needed
+        if (mUsersDatabase != null) {
+            mUsersDatabase.removeEventListener(mUserListener);//not sure if needed
         }
     }
 
     private void initializeDatabaseListener() {
-        mTicketListener = new ValueEventListener() {// Read from the database whenever there's a change
+        mUserListener = new ValueEventListener() {// Read from the database whenever there's a change
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.child(mFirebaseUser.getUid()).child("usableTickets").getValue(Integer.class) != null) {
@@ -339,11 +343,15 @@ public class EarnFragment extends Fragment {
                     //noinspection ConstantConditions
                     mNumberOfTotalTickets = dataSnapshot.child(mFirebaseUser.getUid()).child("totalTicketsEarned").getValue(Integer.class);
                 }
-                if (!isAddingTickets) {
-                    mTicketAmount.setText(String.format(Locale.getDefault(), "%,d", mNumberOfUsableTickets));
+
+                if (dataSnapshot.child(mFirebaseUser.getUid()).child("totalMoneyEarned").getValue(Double.class) != null) {
+                    mMoneyUserEarned = dataSnapshot.child(mFirebaseUser.getUid()).child("totalMoneyEarned").getValue(Double.class);
                 }
-                Log.d(TAG, "Usable Tickets Value is: " + mNumberOfUsableTickets);
-                Log.d(TAG, "Total Tickets Earned Value is: " + mNumberOfTotalTickets);
+
+                if (!isAddingTickets) {
+                    mTicketAmount.setText(String.format("Tickets: %s", String.format(Locale.getDefault(), "%,d", mNumberOfUsableTickets)));
+                }
+                mMoneyAmount.setText(String.format("Money: $%s", String.format(Locale.getDefault(), "%,.2f", mMoneyUserEarned)));
             }
 
             @Override
@@ -351,7 +359,61 @@ public class EarnFragment extends Fragment {
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         };
-        mTicketsDatabase.addValueEventListener(mTicketListener);
+        mUsersDatabase.addValueEventListener(mUserListener);
+
+        //get all messages from database and display them in the recycler view
+        ValueEventListener messageListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    ArrayList<Message> messages = new ArrayList<>();
+                    for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()) {
+                        try {
+                            String username = (String) messageSnapshot.child("a").getValue();//accidentally minified these values
+                            String content = (String) messageSnapshot.child("b").getValue();
+                            String userId = (String) messageSnapshot.child("c").getValue();
+                            Long timestamp = (Long) messageSnapshot.child("d").getValue();
+                            messages.add(new Message(username, content, userId, timestamp));
+                        } catch (Exception e) {
+                            try {
+                                String username = (String) messageSnapshot.child("username").getValue();
+                                String content = (String) messageSnapshot.child("content").getValue();
+                                String userId = (String) messageSnapshot.child("uid").getValue();
+                                Long timestamp = (Long) messageSnapshot.child("timestamp").getValue();
+                                messages.add(new Message(username, content, userId, timestamp));
+                            } catch (Exception e1) {
+                                e.printStackTrace();
+                                e1.printStackTrace();
+                                messages.add(new Message("Error", "Error reading message", "0", System.currentTimeMillis()));
+                            }
+                        }
+                    }
+                    new Thread(() -> {
+                        Long smallestTimestamp = 0L;
+                        for (Message message : messages) {
+                            if (message.getTimestampLong() == null) {
+                                continue;
+                            }
+                            if (message.getTimestampLong() < smallestTimestamp || smallestTimestamp == 0) {
+                                smallestTimestamp = message.getTimestampLong();
+                            }
+                            //delete old messages from database if they are older than a week
+                            if (System.currentTimeMillis() - smallestTimestamp > 604800000) {
+                                mMessageDatabase.removeValue();
+                            }
+                        }
+                    }).start();
+                    mRecyclerView.setAdapter(new MessageAdapter(mContext, messages));
+                    mRecyclerView.smoothScrollToPosition(messages.size() - 1);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.w(TAG, "Failed to read value.", databaseError.toException());
+            }
+        };
+        mMessageDatabase.addValueEventListener(messageListener);
     }
 
     private void initializeStateListener() {
@@ -385,7 +447,8 @@ public class EarnFragment extends Fragment {
         if (result.getResultCode() == RESULT_OK) {// Successfully signed in
             mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
             if (mFirebaseUser != null) {
-                mTicketsDatabase = mDatabase.getReference(mTopLevelDatabase);
+                mUsersDatabase = mDatabase.getReference(mUsersPath);
+                mMessageDatabase = mDatabase.getReference(mMessagesPath);
                 initializeDatabaseListener();//to see the value of total and usable tickets
                 alertUserToChangeDisplayName();
             }
@@ -429,32 +492,29 @@ public class EarnFragment extends Fragment {
                             new UserProfileChangeRequest.Builder()
                                     .setDisplayName(username)
                                     .build());
-                    showIntroDialog();
                 })
-                .setNegativeButton("No thanks", (dialog, which) -> {
-                    Toast.makeText(mContext, "Change your username in the settings at any time!", Toast.LENGTH_LONG).show();
-                    showIntroDialog();
-                })
+                .setNegativeButton("No thanks", (dialog, which) -> Toast.makeText(mContext,
+                        "Change your username in the settings at any time!", Toast.LENGTH_LONG).show())
                 .create()
                 .show();
             mSharedPreferences.edit().putBoolean("usernameSet", true).apply();
         }
     }
 
-    private void showIntroDialog() {
-        new AlertDialog.Builder(mContext)
-                .setTitle("Introduction")
-                .setMessage("Welcome to the 5 Ads app! The idea behind this app is extremely simple and there are only 2 steps involved.\n\n" +
-                        "Step 1. Earn tickets by watching ads (Max 5 a day). Each ad watched gives you 5 tickets. These tickets can be used to " +
-                        "potentially win cash or prizes.\n\n" +
-                        "Step 2. Submit those tickets into raffles! There are multiple raffles ongoing each month in the \"Spend\" tab. " +
-                        "The more tickets submitted the higher your chances to win are! Try and submit as many tickets as possible! " +
-                        "You can also save your tickets up for the next raffle!\n\n" +
-                        "The more ads you watch the more our income is, as our income improves, more frequent prizes and raffles will be added! " +
-                        "Please spread the word about our app!")
-                .setPositiveButton("Ok", ((dialog, which) -> {}))
-                .setCancelable(false)
-                .create()
-                .show();
-    }
+//    private void showIntroDialog() {
+//        new AlertDialog.Builder(mContext)
+//                .setTitle("Introduction")
+//                .setMessage("Welcome to the 5 Ads app! The idea behind this app is extremely simple and there are only 2 steps involved.\n\n" +
+//                        "Step 1. Earn tickets by watching ads (Max 5 a day). Each ad watched gives you 5 tickets. These tickets can be used to " +
+//                        "potentially win cash or prizes.\n\n" +
+//                        "Step 2. Submit those tickets into raffles! There are multiple raffles ongoing each month in the \"Spend\" tab. " +
+//                        "The more tickets submitted the higher your chances to win are! Try and submit as many tickets as possible! " +
+//                        "You can also save your tickets up for the next raffle!\n\n" +
+//                        "The more ads you watch the more our income is, as our income improves, more frequent prizes and raffles will be added! " +
+//                        "Please spread the word about our app!")
+//                .setPositiveButton("Ok", ((dialog, which) -> {}))
+//                .setCancelable(false)
+//                .create()
+//                .show();
+//    }
 }

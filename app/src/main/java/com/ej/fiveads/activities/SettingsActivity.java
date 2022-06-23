@@ -101,7 +101,7 @@ public class SettingsActivity extends AppCompatActivity {
                     email.setData(Uri.parse("mailto:"));
                     email.putExtra(Intent.EXTRA_EMAIL, new String[]{"fiveadshelp@gmail.com"}); //developer's email
                     email.putExtra(Intent.EXTRA_SUBJECT,"Support Ticket"); //Email's Subject
-                    email.putExtra(Intent.EXTRA_TEXT,"Dear Five Ads Team,"); //Email's Greeting text
+                    email.putExtra(Intent.EXTRA_TEXT,"Dear Five Chats Team,"); //Email's Greeting text
 
                     if (packageManager.resolveActivity(email,0) != null) { // there is an activity that can handle it
                         startActivity(email);
