@@ -370,7 +370,7 @@ public class RaffleSubmitActivity extends AppCompatActivity {
                 luckyItem.color = getColor(R.color.light_green);
                 luckyItem.icon = R.drawable.money_48;
                 mGameResults[i] = "$0.01";
-                mNumberGenerator.addNumber(i, 0.07d);//7% chance
+                mNumberGenerator.addNumber(i, 0.4d);//40% chance
             } else if (i == 4) {//winner pie slice
                 luckyItem.topText = "Win $0.02";
                 luckyItem.color = getColor(R.color.light_green);

@@ -100,7 +100,7 @@ public class EarnFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private Double mMoneyUserEarned;
     private TextView mMoneyAmount;
-
+    private boolean mIsTimeCorrect;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         //EarnViewModel earnViewModel = new ViewModelProvider(this).get(EarnViewModel.class);
@@ -159,6 +159,10 @@ public class EarnFragment extends Fragment {
                             }
                             String updatedEnergy = "Energy: " + mEnergyAmountAsInt;
                             mEnergyAmount.setText(updatedEnergy);
+                            Toast.makeText(mContext, "-1 Energy / +1 Ticket", Toast.LENGTH_SHORT).show();
+                            if (mEnergyAmountAsInt == 0) {
+                                Toast.makeText(mContext, "You have finished all your dailies! Don't forget to use your tickets in the spend tab!", Toast.LENGTH_SHORT).show();
+                            }
                             mSharedPreferences.edit().putInt(mCurrentKeyForTheDay, mEnergyAmountAsInt).apply();
                         }
                         initializeAds();
@@ -170,8 +174,89 @@ public class EarnFragment extends Fragment {
             }
         });
 
+        checkTimeWithFirebase();
+
         setNotifications();
         return binding.getRoot();
+    }
+
+    private void checkTimeWithFirebase() {
+        DatabaseReference mOffsetRef = FirebaseDatabase.getInstance().getReference(".info/serverTimeOffset");
+        mOffsetRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.getValue(Long.class) != null) {
+                    //noinspection ConstantConditions
+                    long offset = snapshot.getValue(Long.class);
+                    mIsTimeCorrect = offset <= 7_200_000 && offset >= -7_200_000;//two hours
+                    showDailyLoginDialog();
+                    //Log.d(TAG, "offset is: " + offset + " and isTimeCorrect is: " + mIsTimeCorrect);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.d(TAG, "error is " + error.getMessage());
+            }
+        });
+    }
+
+    private void showDailyLoginDialog() {
+        if (mIsTimeCorrect) {
+            int sum = 0;
+            Calendar calendar = Calendar.getInstance();
+            for (int i = 0; i < 7; i++) {
+                calendar.add(Calendar.DATE, -1);
+                String key = "DL" + calendar.get(Calendar.DAY_OF_YEAR) + "" + calendar.get(Calendar.YEAR);//DL is for daily login
+                if (mSharedPreferences.getInt(key, 0) == 1) {//if the user has logged in that day, add 1 to the sum
+                    sum++;
+                }
+            }
+            if (mSharedPreferences.getInt("DL" + mCurrentKeyForTheDay, 0) != 1) {//show the dialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setTitle("Daily Login Reward!");
+                if (sum == 7) {
+                    builder.setMessage("You can earn a reward for every day you login!\n\n" +
+                            "Day 1: 1 Ticket\n" +
+                            "Day 2: 1 Ticket\n" +
+                            "Day 3: 1 Ticket\n" +
+                            "Day 4: 1 Ticket\n" +
+                            "Day 5: 1 Ticket\n" +
+                            "Day 6: 1 Ticket\n" +
+                            "Day 7 and onward: $0.01 and 1 Ticket\n\n" +
+                            "Collect your reward by clicking the button below!\n\n" +
+                            "Your reward for today is $0.01 and 1 Ticket!");
+                    builder.setIcon(R.drawable.money_48);
+                    builder.setPositiveButton("Collect Reward", (dialog, which) -> {
+                        mUsersDatabase.child(mFirebaseUser.getUid()).child("money").setValue(mMoneyUserEarned + 0.01);
+                        mUsersDatabase.child(mFirebaseUser.getUid()).child("usableTickets").setValue(mNumberOfUsableTickets + 1);
+                        mUsersDatabase.child(mFirebaseUser.getUid()).child("totalTicketsEarned").setValue(mNumberOfTotalTickets + 1);
+                        Toast.makeText(mContext, "You have earned $0.01 and 1 Ticket!", Toast.LENGTH_SHORT).show();
+                        mSharedPreferences.edit().putInt("DL" + mCurrentKeyForTheDay, 1).apply();
+                    });
+                } else {
+                    builder.setMessage("You can earn a reward for every day you login!\n\n" +
+                            "Day 1: 1 Ticket\n" +
+                            "Day 2: 1 Ticket\n" +
+                            "Day 3: 1 Ticket\n" +
+                            "Day 4: 1 Ticket\n" +
+                            "Day 5: 1 Ticket\n" +
+                            "Day 6: 1 Ticket\n" +
+                            "Day 7 and onward: $0.01 and 1 Ticket\n\n" +
+                            "Collect your reward by clicking the button below!\n\n" +
+                            "Your reward for today is 1 ticket!");
+                    builder.setIcon(R.drawable.ticket);
+                    builder.setPositiveButton("Collect Reward", (dialog, which) -> {
+                        mUsersDatabase.child(mFirebaseUser.getUid()).child("usableTickets").setValue(mNumberOfUsableTickets + 1);
+                        mUsersDatabase.child(mFirebaseUser.getUid()).child("totalTicketsEarned").setValue(mNumberOfTotalTickets + 1);
+                        Toast.makeText(mContext, "You have earned 1 ticket!", Toast.LENGTH_SHORT).show();
+                        mSharedPreferences.edit().putInt("DL" + mCurrentKeyForTheDay, 1).apply();
+                    });
+                }
+                builder.setNeutralButton("No Thanks", (dialog, which) -> dialog.dismiss());
+                builder.show();
+            }
+        }
     }
 
     private void sendMessageToDatabase() {
@@ -492,29 +577,31 @@ public class EarnFragment extends Fragment {
                             new UserProfileChangeRequest.Builder()
                                     .setDisplayName(username)
                                     .build());
+                    showIntroDialog();
                 })
-                .setNegativeButton("No thanks", (dialog, which) -> Toast.makeText(mContext,
-                        "Change your username in the settings at any time!", Toast.LENGTH_LONG).show())
+                .setNegativeButton("No thanks", (dialog, which) -> {
+                    Toast.makeText(mContext, "Change your username in the settings at any time!", Toast.LENGTH_LONG).show();
+                    showIntroDialog();
+                })
+                .setCancelable(false)
                 .create()
                 .show();
             mSharedPreferences.edit().putBoolean("usernameSet", true).apply();
         }
     }
 
-//    private void showIntroDialog() {
-//        new AlertDialog.Builder(mContext)
-//                .setTitle("Introduction")
-//                .setMessage("Welcome to the 5 Ads app! The idea behind this app is extremely simple and there are only 2 steps involved.\n\n" +
-//                        "Step 1. Earn tickets by watching ads (Max 5 a day). Each ad watched gives you 5 tickets. These tickets can be used to " +
-//                        "potentially win cash or prizes.\n\n" +
-//                        "Step 2. Submit those tickets into raffles! There are multiple raffles ongoing each month in the \"Spend\" tab. " +
-//                        "The more tickets submitted the higher your chances to win are! Try and submit as many tickets as possible! " +
-//                        "You can also save your tickets up for the next raffle!\n\n" +
-//                        "The more ads you watch the more our income is, as our income improves, more frequent prizes and raffles will be added! " +
-//                        "Please spread the word about our app!")
-//                .setPositiveButton("Ok", ((dialog, which) -> {}))
-//                .setCancelable(false)
-//                .create()
-//                .show();
-//    }
+    private void showIntroDialog() {
+        new AlertDialog.Builder(mContext)
+                .setTitle("Introduction")
+                .setMessage("Welcome to the 5 Chats app! The idea behind this app is extremely simple and there are only 2 steps involved.\n\n" +
+                        "Step 1. Earn tickets by chatting and watching ads (Max 5 times a day). Each chat gives you 1 ticket. These tickets can be used to " +
+                        "potentially win cash or prizes.\n\n" +
+                        "Step 2. Submit those tickets into lucky wheel! There are multiple types of wheels ongoing in the \"Spend\" tab. " +
+                        "There are also daily login rewards that can help you get to your payout faster!\n\n" +
+                        "Be considerate and please spread the word about our app!")
+                .setPositiveButton("Ok", ((dialog, which) -> {}))
+                .setCancelable(false)
+                .create()
+                .show();
+    }
 }
