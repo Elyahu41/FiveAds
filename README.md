@@ -1,7 +1,7 @@
 # FiveAds
 Mobile Android Application called, "Five Ads / 5 Ads". The idea is to make people watch ads, only five times per day, and to give them tickets. And with these tickets, they can earn prizes.
 
-Apparently this idea is againt google admob's policy and this app got my account banned.
+Apparently this idea is againt google admob's policy and this app got my account banned. :sweat_smile:	
 
 I have since just made this app a simple messaging app using firebase.
 
