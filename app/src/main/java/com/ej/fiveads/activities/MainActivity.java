@@ -4,16 +4,11 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 
 import com.ej.fiveads.R;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Objects;
@@ -37,28 +32,28 @@ public class MainActivity extends AppCompatActivity {
 
         setupFAB();
 
-        BottomNavigationView navView = findViewById(R.id.nav_view);
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_earn, R.id.navigation_spend, R.id.navigation_leaderboard, R.id.navigation_redeem)
-                .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(navView, navController);
-
-        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-            if (destination.toString().contains("Spend")) {
-                mSettingFab.hide();
-            }
-            if (destination.toString().contains("Earn")) {
-                mSettingFab.show();
-            }
-            if (destination.toString().contains("Leaderboard")) {
-                mSettingFab.hide();
-            }
-            if (destination.toString().contains("Redeem")) {
-                mSettingFab.hide();
-            }
-        });
+//        BottomNavigationView navView = findViewById(R.id.nav_view);
+//        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+//                R.id.navigation_earn, R.id.navigation_spend, R.id.navigation_leaderboard, R.id.navigation_redeem)
+//                .build();
+//        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
+//        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+//        NavigationUI.setupWithNavController(navView, navController);
+//
+//        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+//            if (destination.toString().contains("Spend")) {
+//                mSettingFab.hide();
+//            }
+//            if (destination.toString().contains("Earn")) {
+//                mSettingFab.show();
+//            }
+//            if (destination.toString().contains("Leaderboard")) {
+//                mSettingFab.hide();
+//            }
+//            if (destination.toString().contains("Redeem")) {
+//                mSettingFab.hide();
+//            }
+//        });
 
         mAdView = findViewById(R.id.adView);
         mAdView.loadAd(new AdRequest.Builder().build());

@@ -84,9 +84,9 @@ public class EarnFragment extends Fragment {
     private FirebaseDatabase mDatabase;
     private DatabaseReference mUsersDatabase;
     private DatabaseReference mMessageDatabase;
-    private TextView mTicketAmount;
-    private TextView mEnergyAmount;
-    private TextView mCountDown;
+    //private TextView mTicketAmount;
+    //private TextView mEnergyAmount;
+    //private TextView mCountDown;
     private static RewardedAd mRewardedAd;
     private SharedPreferences mSharedPreferences;
     private final String TAG = "EarnFragment";
@@ -124,11 +124,11 @@ public class EarnFragment extends Fragment {
             initializeDatabaseListener();//to see the value of total and usable tickets
         }
 
-        mCountDown = binding.countdown;
-        mCountDown.setVisibility(View.INVISIBLE);
-        mEnergyAmount = binding.amountOfEnergyRemaining;
-        mTicketAmount = binding.ticketAmount;
-        mMoneyAmount = binding.moneyAmount;
+        //mCountDown = binding.countdown;
+        //mCountDown.setVisibility(View.INVISIBLE);
+        //mEnergyAmount = binding.amountOfEnergyRemaining;
+        //mTicketAmount = binding.ticketAmount;
+        //mMoneyAmount = binding.moneyAmount;
 
         mRecyclerView = binding.messageRV;
         mRecyclerView.setHasFixedSize(true);
@@ -148,7 +148,7 @@ public class EarnFragment extends Fragment {
 
                 if (mRewardedAd != null && mEnergyAmountAsInt > 0) {
                     mRewardedAd.show(requireActivity(), rewardItem -> {// show ad and handle the reward.
-                        recreateTimer(rewardItem);
+                        //recreateTimer(rewardItem);
                         Log.d(TAG, "The user earned the reward.");
                         int rewardAmount = rewardItem.getAmount();//should be only 1
                         if (rewardItem.getType().equals("Ticket")) {
@@ -158,7 +158,7 @@ public class EarnFragment extends Fragment {
                                 mEnergyAmountAsInt--;
                             }
                             String updatedEnergy = "Energy: " + mEnergyAmountAsInt;
-                            mEnergyAmount.setText(updatedEnergy);
+                            //mEnergyAmount.setText(updatedEnergy);
                             Toast.makeText(mContext, "-1 Energy / +1 Ticket", Toast.LENGTH_SHORT).show();
                             if (mEnergyAmountAsInt == 0) {
                                 Toast.makeText(mContext, "You have finished all your dailies! Don't forget to use your tickets in the spend tab!", Toast.LENGTH_SHORT).show();
@@ -174,9 +174,9 @@ public class EarnFragment extends Fragment {
             }
         });
 
-        checkTimeWithFirebase();
+        //checkTimeWithFirebase();
 
-        setNotifications();
+        //setNotifications();
         return binding.getRoot();
     }
 
@@ -277,26 +277,26 @@ public class EarnFragment extends Fragment {
 
             int currentTickets = mNumberOfUsableTickets;
             final int FINAL_TICKETS = currentTickets + rewardItem.getAmount();
-            final int resetTextColor = mTicketAmount.getTextColors().getDefaultColor();
+            //final int resetTextColor = mTicketAmount.getTextColors().getDefaultColor();
 
             @Override
             public void onTick(long millisUntilFinished) {
                 isAddingTickets = true;
-                mTicketAmount.setTextColor(mContext.getResources().getColor(R.color.green, mContext.getTheme()));
+                //mTicketAmount.setTextColor(mContext.getResources().getColor(R.color.green, mContext.getTheme()));
                 currentTickets += 1;
-                mTicketAmount.setText(String.format("Tickets: %s", String.format(Locale.getDefault(), "%,d", currentTickets)));
+                //mTicketAmount.setText(String.format("Tickets: %s", String.format(Locale.getDefault(), "%,d", currentTickets)));
             }
 
             @Override
             public void onFinish() {
-                mTicketAmount.setTextColor(resetTextColor);
-                mTicketAmount.setText(String.format("Tickets: %s", String.format(Locale.getDefault(), "%,d", FINAL_TICKETS)));
+                //mTicketAmount.setTextColor(resetTextColor);
+                //mTicketAmount.setText(String.format("Tickets: %s", String.format(Locale.getDefault(), "%,d", FINAL_TICKETS)));
                 isAddingTickets = false;
             }
         };
     }
 
-    private void initializeAds() {//TODO add resizable ads
+    private void initializeAds() {
         MobileAds.initialize(mContext, initializationStatus -> {
                     RewardedAd.load(mContext,
                             mContext.getString(R.string.admob_main_ad_id),// replace with "ca-app-pub-3940256099942544/5224354917" for development
@@ -343,11 +343,11 @@ public class EarnFragment extends Fragment {
         mCurrentKeyForTheDay = "" + calendar.get(Calendar.DAY_OF_YEAR) + "" + calendar.get(Calendar.YEAR);
         mEnergyAmountAsInt = mSharedPreferences.getInt(mCurrentKeyForTheDay, DEFAULT_MAX_ENERGY);//probably should save in server or somewhere else
         String currentEnergy = "Energy: " + mEnergyAmountAsInt;
-        mEnergyAmount.setText(currentEnergy);
+        //mEnergyAmount.setText(currentEnergy);
     }
 
     private void startCountdownTimer() {
-        mCountDown.setVisibility(View.VISIBLE);
+        //mCountDown.setVisibility(View.VISIBLE);
         Calendar calendar = Calendar.getInstance();
         Calendar calendar2 = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY,0);
@@ -370,7 +370,7 @@ public class EarnFragment extends Fragment {
                     e.printStackTrace();
                 }
                 String s = "Reset: " + timeTillMidnight;
-                mCountDown.setText(s);
+                //mCountDown.setText(s);
             }
             @Override
             public void onFinish() {
@@ -387,7 +387,7 @@ public class EarnFragment extends Fragment {
             startCountdownTimer();
         }
         if (!isAddingTickets) {
-            mTicketAmount.setText(String.format("Tickets: %s", String.format(Locale.getDefault(), "%,d", mNumberOfUsableTickets)));
+            //mTicketAmount.setText(String.format("Tickets: %s", String.format(Locale.getDefault(), "%,d", mNumberOfUsableTickets)));
         }
     }
 
@@ -419,24 +419,23 @@ public class EarnFragment extends Fragment {
         mUserListener = new ValueEventListener() {// Read from the database whenever there's a change
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.child(mFirebaseUser.getUid()).child("usableTickets").getValue(Integer.class) != null) {
-                    //noinspection ConstantConditions
-                    mNumberOfUsableTickets = dataSnapshot.child(mFirebaseUser.getUid()).child("usableTickets").getValue(Integer.class);//Objects.requireNonNull() did not work
-                }
-
-                if (dataSnapshot.child(mFirebaseUser.getUid()).child("totalTicketsEarned").getValue(Integer.class) != null) {
-                    //noinspection ConstantConditions
-                    mNumberOfTotalTickets = dataSnapshot.child(mFirebaseUser.getUid()).child("totalTicketsEarned").getValue(Integer.class);
-                }
-
-                if (dataSnapshot.child(mFirebaseUser.getUid()).child("totalMoneyEarned").getValue(Double.class) != null) {
-                    mMoneyUserEarned = dataSnapshot.child(mFirebaseUser.getUid()).child("totalMoneyEarned").getValue(Double.class);
-                }
-
-                if (!isAddingTickets) {
-                    mTicketAmount.setText(String.format("Tickets: %s", String.format(Locale.getDefault(), "%,d", mNumberOfUsableTickets)));
-                }
-                mMoneyAmount.setText(String.format("Money: $%s", String.format(Locale.getDefault(), "%,.2f", mMoneyUserEarned)));
+//                if (dataSnapshot.child(mFirebaseUser.getUid()).child("usableTickets").getValue(Integer.class) != null) {
+//                    //noinspection ConstantConditions
+//                    //mNumberOfUsableTickets = dataSnapshot.child(mFirebaseUser.getUid()).child("usableTickets").getValue(Integer.class);//Objects.requireNonNull() did not work
+//                }
+//
+//                if (dataSnapshot.child(mFirebaseUser.getUid()).child("totalTicketsEarned").getValue(Integer.class) != null) {
+//                    //noinspection ConstantConditions
+//                    //mNumberOfTotalTickets = dataSnapshot.child(mFirebaseUser.getUid()).child("totalTicketsEarned").getValue(Integer.class);
+//                }
+//
+//                if (dataSnapshot.child(mFirebaseUser.getUid()).child("totalMoneyEarned").getValue(Double.class) != null) {
+//                    //mMoneyUserEarned = dataSnapshot.child(mFirebaseUser.getUid()).child("totalMoneyEarned").getValue(Double.class);
+//                }
+//                if (!isAddingTickets) {
+//                    //mTicketAmount.setText(String.format("Tickets: %s", String.format(Locale.getDefault(), "%,d", mNumberOfUsableTickets)));
+//                }
+                //mMoneyAmount.setText(String.format("Money: $%s", String.format(Locale.getDefault(), "%,.2f", mMoneyUserEarned)));
             }
 
             @Override
@@ -593,13 +592,10 @@ public class EarnFragment extends Fragment {
     private void showIntroDialog() {
         new AlertDialog.Builder(mContext)
                 .setTitle("Introduction")
-                .setMessage("Welcome to the 5 Chats app! The idea behind this app is extremely simple and there are only 2 steps involved.\n\n" +
-                        "Step 1. Earn tickets by chatting and watching ads (Max 5 times a day). Each chat gives you 1 ticket. These tickets can be used to " +
-                        "potentially win cash or prizes.\n\n" +
-                        "Step 2. Submit those tickets into lucky wheel! There are multiple types of wheels ongoing in the \"Spend\" tab. " +
-                        "There are also daily login rewards that can help you get to your payout faster!\n\n" +
-                        "Be considerate and please spread the word about our app!")
-                .setPositiveButton("Ok", ((dialog, which) -> {}))
+                .setMessage("Welcome to the 5 Chats app! This app is a simple chat room for anyone who wants to use it. " +
+                        "All messages will be deleted every 7 days. You can change your username in the settings at any time." +
+                        "Please enjoy the app!")
+                .setPositiveButton("Ok", ((dialog, which) -> {dialog.dismiss();}))
                 .setCancelable(false)
                 .create()
                 .show();
